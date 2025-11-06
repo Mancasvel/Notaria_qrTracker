@@ -1,26 +1,30 @@
-# Gestión de Copias - Notaría
+# Gestión Documental - Notaría
 
-Sistema web avanzado para registrar y gestionar copias de documentos en una notaría con trazabilidad mediante códigos QR y ubicación por despacho. Construido con Next.js 15, TailwindCSS, MongoDB Atlas y NextAuth.
+Sistema web avanzado para registrar y gestionar documentos en una notaría con trazabilidad completa mediante códigos QR, historial de ubicaciones y gestión por despacho. Construido con Next.js 15, TailwindCSS, MongoDB Atlas y NextAuth.
 
-## 🚀 Características
+## 🚀 Características Principales
 
-- **Autenticación por roles**: Admin, Copias, Gestión y Oficiales
-- **Registro de copias con QR**: Generación automática de códigos QR únicos
-- **Escaneo QR con cámara**: Actualización automática de ubicación por despacho
-- **Vista detalle de documentos**: Información completa con observaciones editables
-- **Dashboard administrativo**: Consulta y filtros avanzados
-- **PWA (Progressive Web App)**: Funciona offline, instalación en móviles
-- **Tema claro/oscuro**: Interfaz moderna y minimalista
-- **Responsive**: Funciona en móvil y desktop
-- **Deploy en Vercel**: Optimizado para la plataforma
+- **Autenticación por roles**: Admin, Copias, Gestión y Oficiales con permisos específicos
+- **Registro de documentos con QR**: Generación automática de códigos QR únicos por documento
+- **Escaneo QR con cámara**: Actualización automática de ubicación por despacho usando PWA
+- **Historial completo de ubicaciones**: Trazabilidad total del recorrido de cada documento
+- **Vista detalle enriquecida**: Información completa con observaciones editables y recorrido visual
+- **Dashboard administrativo**: Consulta, filtros avanzados y función de archivo
+- **Función de archivar**: Copias pueden marcar documentos como archivados
+- **PWA (Progressive Web App)**: Funciona offline, instalación en móviles, acceso a cámara
+- **Tema claro/oscuro**: Interfaz moderna y minimalista tipo Linear/Notion
+- **Totalmente responsive**: Optimizado para móvil, tablet y desktop con vistas adaptativas
+- **Deploy en Vercel**: Optimizado para producción
 
 ## 🛠️ Stack Tecnológico
 
 - **Frontend**: Next.js 15 (App Router), React 19, TypeScript
-- **Styling**: TailwindCSS con tema personalizado
-- **Base de datos**: MongoDB Atlas con Mongoose
-- **Autenticación**: NextAuth.js con credenciales
-- **Despliegue**: Vercel
+- **Styling**: TailwindCSS con tema personalizado y sistema de diseño consistente
+- **Base de datos**: MongoDB Atlas con Mongoose (base de datos: `notaria`)
+- **Autenticación**: NextAuth.js con JWT y credenciales seguras
+- **QR Codes**: `qrcode` para generación, `html5-qrcode` para escaneo
+- **PWA**: Manifest, Service Workers, Camera API
+- **Despliegue**: Vercel con optimizaciones de producción
 
 ## 📋 Requisitos Previos
 
@@ -61,8 +65,8 @@ Sistema web avanzado para registrar y gestionar copias de documentos en una nota
    ```
 
 5. **Ejecuta el servidor de desarrollo**
-   ```bash
-   npm run dev
+```bash
+npm run dev
    ```
 
 6. **Abre [http://localhost:3000](http://localhost:3000)**
@@ -90,25 +94,43 @@ src/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API Routes
 │   │   ├── auth/          # NextAuth configuración
-│   │   └── registros/     # API de registros
-│   ├── dashboard/         # Página de admin
-│   ├── login/            # Página de login
-│   ├── registrar/        # Página de copias
-│   └── layout.tsx        # Layout principal
+│   │   ├── registros/     # API de registros CRUD
+│   │   ├── escanear/      # API de escaneo QR
+│   │   └── archivar/      # API de archivado
+│   ├── dashboard/         # Página de admin con filtros y tabla
+│   ├── documento/[id]/    # Vista detalle con historial completo
+│   ├── escanear/          # Página de escaneo QR con cámara
+│   ├── inicio/            # Página de inicio para gestión/oficiales
+│   ├── login/             # Página de login
+│   ├── registrar/         # Página de registro de documentos
+│   └── layout.tsx         # Layout principal con metadata PWA
 ├── components/            # Componentes React
-│   ├── ui/               # Componentes base (Button, Input, etc.)
-│   ├── Header.tsx        # Header con navegación
-│   ├── Providers.tsx     # Providers de contexto
-│   └── ThemeToggle.tsx   # Toggle de tema
-├── lib/                  # Utilidades
-│   ├── mongodb.ts        # Conexión a MongoDB
-│   ├── utils.ts          # Funciones helper
-│   └── types.ts          # Tipos TypeScript
-├── models/               # Modelos de MongoDB
-│   ├── Usuario.ts        # Modelo de usuario
-│   └── Registro.ts       # Modelo de registro
-└── scripts/              # Scripts de utilidad
-    └── seed.ts           # Inicialización de BD
+│   ├── ui/                # Componentes base reutilizables
+│   │   ├── Button.tsx     # Botón con variantes
+│   │   ├── Card.tsx       # Tarjetas de contenido
+│   │   ├── Input.tsx      # Input de texto
+│   │   ├── Select.tsx     # Selector dropdown
+│   │   ├── Checkbox.tsx   # Checkbox personalizado
+│   │   └── DropdownMenu.tsx # Menú desplegable
+│   ├── Header.tsx         # Header con menú responsive
+│   ├── Providers.tsx      # Providers de contexto (NextAuth, Theme)
+│   └── ThemeToggle.tsx    # Toggle de tema claro/oscuro
+├── lib/                   # Utilidades y configuración
+│   ├── mongodb.ts         # Conexión a MongoDB con cache
+│   ├── qr.ts              # Generación de códigos QR
+│   ├── auth-types.ts      # Tipos extendidos de NextAuth
+│   ├── security.ts        # Utilidades de seguridad
+│   ├── utils.ts           # Funciones helper
+│   └── types.ts           # Tipos TypeScript globales
+├── models/                # Modelos de MongoDB (Mongoose)
+│   ├── Usuario.ts         # Modelo de usuario con roles
+│   └── Registro.ts        # Modelo de registro con historial
+└── scripts/               # Scripts de utilidad
+    └── seed.ts            # Inicialización de BD con datos de prueba
+middleware.ts              # Middleware de autenticación y seguridad
+public/
+├── manifest.json          # Manifest PWA
+└── icon-*.png             # Iconos de la aplicación
 ```
 
 ## 🚀 Despliegue en Vercel
@@ -132,51 +154,128 @@ src/
   rol: 'admin' | 'copias' | 'gestion' | 'oficial';
   despacho: string;            // ej. 'DESPACHO1', 'DESPACHO_MARTA'
   passwordHash: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 ```
 
 ### Registro
 ```typescript
 {
-  numero: string;              // Número de protocolo
+  numero: string;              // Número de protocolo (formato: YYYY-NNNNN)
   tipo: 'copia_simple' | 'presentacion_telematica';
   hecha: boolean;              // Estado del documento
   notario: 'MAPE' | 'MCVF';
-  usuario: string;             // Nombre del copista
-  fecha: Date;
-  ubicacion: string;           // Despacho actual del documento
-  qrCodeUrl: string;           // URL del QR generado
-  observaciones: string;       // Notas (máximo 255 caracteres)
+  usuario: string;             // Nombre del copista que creó el registro
+  fecha: Date;                 // Fecha de creación
+  ubicacionActual: string;     // Despacho actual del documento
+  historialUbicaciones: [      // Historial completo de movimientos
+    {
+      lugar: string;           // Nombre del despacho
+      usuario: string;         // Usuario que realizó el movimiento
+      fecha: Date;             // Fecha y hora del movimiento
+    }
+  ];
+  qrCodeUrl: string;           // Data URL del QR generado (base64)
+  observaciones: string;       // Notas editables (máximo 255 caracteres)
+  createdAt: Date;
+  updatedAt: Date;
 }
 ```
 
-## 📱 Funcionalidades QR y PWA
+### Índices de Base de Datos
+Para optimizar las consultas, se han creado índices en:
+- `registros.numero` (único)
+- `registros.notario`
+- `registros.usuario`
+- `registros.hecha`
+- `registros.ubicacionActual`
+- `registros.fecha` (descendente)
+
+## 📱 Funcionalidades Avanzadas
 
 ### 🏷️ Sistema de Códigos QR
-- **Generación automática**: QR único por documento con enlace directo
-- **Impresión**: Diseño optimizado para impresión en hojas A4
-- **Escaneo**: Lectura con cámara del dispositivo móvil
-- **Actualización automática**: Ubicación se actualiza al despacho del usuario
+- **Generación automática**: QR único por documento con enlace directo a `/documento/[id]`
+- **Formato**: Data URL (base64) almacenado en la base de datos
+- **Impresión**: Botón de impresión con diseño optimizado para hojas A4
+- **Escaneo**: Lectura con cámara del dispositivo móvil usando `html5-qrcode`
+- **Actualización automática**: Al escanear, la ubicación se actualiza al despacho del usuario
+- **Validación**: Verificación de QR válidos y documentos existentes
 
 ### 📱 Progressive Web App (PWA)
 - **Instalación**: Se puede instalar en móviles como app nativa
-- **Offline**: Funciona sin conexión a internet
+- **Manifest**: Configuración completa con iconos y colores de tema
+- **Offline**: Funciona sin conexión a internet (rutas cacheadas)
 - **Camera API**: Acceso directo a la cámara para escanear QR
-- **Responsive**: Optimizado para uso táctil
+- **Responsive**: Optimizado para uso táctil con botones grandes
+- **Permisos**: Gestión de permisos de cámara con mensajes claros
 
-### 🔄 Flujo de Trazabilidad
-1. **Registro**: Copista crea documento → QR generado automáticamente
+### 🔄 Flujo de Trazabilidad Completo
+1. **Registro**: Copista u Oficial crea documento → QR generado automáticamente
+   - El número de protocolo se inicializa con el año actual (ej: `2025-`)
+   - Se crea la primera entrada en el historial de ubicaciones
 2. **Impresión**: QR se imprime y pega en el documento físico
+   - Botón de impresión disponible inmediatamente después del registro
 3. **Movimiento**: Cualquier usuario escanea QR → ubicación actualizada
-4. **Consulta**: Dashboard muestra ubicación en tiempo real
-5. **Observaciones**: Notas editables por cualquier usuario autorizado
+   - Se registra: lugar, usuario y fecha/hora exacta del movimiento
+   - El historial mantiene todas las ubicaciones previas
+4. **Consulta**: Dashboard muestra ubicación actual en tiempo real
+   - Filtros por ubicación, notario, tipo, estado, usuario
+   - Vista de tabla en desktop, tarjetas en móvil
+5. **Detalle**: Vista completa con historial visual de recorrido
+   - Línea de tiempo con todos los movimientos
+   - Indicador de ubicación actual
+   - Observaciones editables por cualquier usuario autorizado
+6. **Archivo**: Copias pueden archivar documentos completados
+   - Marca como "hecha" y mueve a "ARCHIVO"
+   - Registra el movimiento en el historial
 
-## 🎨 Tema y UI
+### 👥 Permisos por Rol
 
-- **Tipografía**: Inter
-- **Colores**: Sistema de colores consistente
-- **Componentes**: Minimalistas y funcionales
-- **Responsive**: Mobile-first approach
+| Funcionalidad | Admin | Copias | Oficial | Gestión |
+|--------------|-------|--------|---------|---------|
+| Ver Dashboard | ✅ | ❌ | ❌ | ❌ |
+| Registrar documentos | ❌ | ✅ | ✅ | ❌ |
+| Escanear QR | ✅ | ✅ | ✅ | ✅ |
+| Ver detalles | ✅ | ✅ | ✅ | ✅ |
+| Editar observaciones | ✅ | ✅ | ✅ | ✅ |
+| Archivar documentos | ❌ | ✅ | ❌ | ❌ |
+| Página de inicio | ❌ | ❌ | ✅ | ✅ |
+
+## 🎨 Diseño y UX
+
+### Estilo Visual
+- **Tipografía**: Inter (variable font) para máxima legibilidad
+- **Paleta de colores**: 
+  - Primario: Azul (#3b82f6)
+  - Secundario: Gris claro
+  - Tema oscuro: Soporte completo con transiciones suaves
+- **Componentes**: Minimalistas tipo Linear/Notion
+  - Bordes redondeados (8px)
+  - Sombras suaves y sutiles
+  - Espaciado consistente (sistema de 4px)
+- **Iconos**: Heroicons v2 (outline)
+
+### Responsive Design
+- **Mobile-first approach**: Diseñado primero para móvil
+- **Breakpoints**:
+  - `sm`: 640px (tablets pequeñas)
+  - `md`: 768px (tablets)
+  - `lg`: 1024px (laptops)
+  - `xl`: 1280px (desktops)
+- **Adaptaciones específicas**:
+  - Header: Menú desplegable en móvil, navegación completa en desktop
+  - Dashboard: Tarjetas en móvil, tabla en desktop
+  - Formularios: Inputs y botones de tamaño táctil (mínimo 44px)
+  - Espaciado: Márgenes reducidos en móvil, amplios en desktop
+
+### Componentes UI Reutilizables
+- **Button**: Variantes (default, ghost, outline) y tamaños (sm, md, lg)
+- **Card**: Contenedor con header, content y description
+- **Input**: Campo de texto con estados (focus, disabled, error)
+- **Select**: Dropdown nativo estilizado
+- **Checkbox**: Checkbox personalizado con animaciones
+- **DropdownMenu**: Menú desplegable con posicionamiento inteligente
 
 ## 🔒 Seguridad
 
@@ -226,11 +325,68 @@ Esta aplicación implementa múltiples capas de seguridad:
 
 ## 📝 Scripts Disponibles
 
-- `npm run dev` - Servidor de desarrollo
-- `npm run build` - Build de producción
+- `npm run dev` - Servidor de desarrollo (puerto 3000)
+- `npm run build` - Build de producción con optimizaciones
 - `npm run start` - Servidor de producción
-- `npm run lint` - Linting
-- `npm run seed` - Inicializar base de datos con datos de prueba
+- `npm run lint` - Linting con ESLint
+- `npm run seed` - Inicializar base de datos con datos de prueba y usuarios
+
+## 🆕 Novedades y Mejoras Recientes
+
+### v2.0 - Trazabilidad Completa (Enero 2025)
+- ✅ **Historial de ubicaciones**: Cada documento mantiene un registro completo de todos sus movimientos
+- ✅ **Vista de recorrido**: Visualización cronológica del historial en la página de detalle
+- ✅ **Función de archivar**: Los copistas pueden marcar documentos como archivados
+- ✅ **Año automático en protocolo**: El campo de número se inicializa con el año actual (ej: `2025-`)
+- ✅ **Permisos extendidos**: Oficiales ahora pueden crear registros
+- ✅ **Menú responsive**: Navegación mejorada con dropdown adaptativo
+- ✅ **Dashboard mejorado**: Vista de tarjetas en móvil, tabla en desktop
+- ✅ **Página de inicio**: Nueva página para roles de gestión y oficiales
+- ✅ **Nombre actualizado**: "Gestión Documental" en lugar de "Registro de Copias"
+
+### v1.0 - Lanzamiento Inicial
+- ✅ Sistema de autenticación con NextAuth
+- ✅ Generación y escaneo de códigos QR
+- ✅ PWA con soporte offline
+- ✅ Dashboard administrativo
+- ✅ Tema claro/oscuro
+- ✅ Diseño responsive
+
+## 🐛 Solución de Problemas
+
+### La cámara no funciona
+- Verifica que hayas dado permisos de cámara al navegador
+- En iOS, asegúrate de usar Safari (Chrome no soporta Camera API en iOS)
+- La aplicación debe estar en HTTPS (o localhost) para acceder a la cámara
+
+### Error de conexión a MongoDB
+- Verifica que `MONGODB_URI` esté correctamente configurado en `.env.local`
+- Asegúrate de que tu IP esté en la whitelist de MongoDB Atlas
+- Verifica que el nombre de la base de datos sea `notaria`
+
+### El QR no se escanea
+- Asegúrate de que el QR esté bien iluminado
+- Mantén el QR dentro del recuadro de enfoque
+- Verifica que el QR haya sido generado correctamente (debe apuntar a `/documento/[id]`)
+
+### Error al hacer build
+- Ejecuta `npm install` para asegurarte de que todas las dependencias estén instaladas
+- Verifica que las variables de entorno estén configuradas
+- Revisa que no haya errores de TypeScript con `npm run lint`
+
+## 🔮 Roadmap
+
+Funcionalidades planificadas para futuras versiones:
+
+- [ ] **Notificaciones**: Sistema de notificaciones push para movimientos importantes
+- [ ] **Búsqueda avanzada**: Búsqueda full-text en observaciones y números
+- [ ] **Exportación**: Exportar registros a PDF/Excel
+- [ ] **Estadísticas**: Dashboard con gráficos y métricas
+- [ ] **Firma digital**: Integración con firma electrónica
+- [ ] **API REST**: API pública para integraciones
+- [ ] **Webhooks**: Notificaciones automáticas a sistemas externos
+- [ ] **Auditoría**: Log completo de todas las acciones de usuarios
+- [ ] **Multi-notaría**: Soporte para múltiples notarías en una sola instancia
 
 ## 🤝 Contribución
 
@@ -243,3 +399,7 @@ Esta aplicación implementa múltiples capas de seguridad:
 ## 📄 Licencia
 
 Este proyecto está bajo la Licencia MIT.
+
+---
+
+**Desarrollado con ❤️ para modernizar la gestión documental notarial**
