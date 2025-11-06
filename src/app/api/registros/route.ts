@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (ubicacion) {
-      filtros.ubicacion = { $regex: ubicacion, $options: 'i' };
+      filtros.ubicacionActual = { $regex: ubicacion, $options: 'i' };
     }
 
     const registros = await Registro.find(filtros).sort({ fecha: -1 });
@@ -112,7 +112,12 @@ export async function POST(request: NextRequest) {
       notario,
       usuario: usuario.nombre,
       fecha: new Date(),
-      ubicacion: usuario.despacho,
+      ubicacionActual: usuario.despacho,
+      historialUbicaciones: [{
+        lugar: usuario.despacho,
+        usuario: usuario.nombre,
+        fecha: new Date(),
+      }],
       qrCodeUrl: '',
       observaciones: '',
     });
