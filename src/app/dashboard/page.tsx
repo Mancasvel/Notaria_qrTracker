@@ -93,9 +93,9 @@ export default function DashboardPage() {
         <div className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader className="px-4 sm:px-6">
-              <CardTitle className="text-xl sm:text-2xl">Dashboard de Registros</CardTitle>
+              <CardTitle className="text-xl sm:text-2xl">Dashboard de Documentos</CardTitle>
               <CardDescription className="text-sm">
-                Consulta y administra todos los registros de copias
+                Consulta y administra todos los documentos con su trazabilidad completa
               </CardDescription>
             </CardHeader>
             <CardContent className="px-4 sm:px-6">
@@ -226,7 +226,16 @@ export default function DashboardPage() {
                             />
                           </td>
                           <td className="p-3">{registro.notario}</td>
-                          <td className="p-3">{registro.ubicacion || 'Sin asignar'}</td>
+                          <td className="p-3">
+                            <div className="space-y-1">
+                              <div className="font-medium">{registro.ubicacionActual || 'Sin asignar'}</div>
+                              {registro.historialUbicaciones && registro.historialUbicaciones.length > 1 && (
+                                <div className="text-xs text-muted-foreground">
+                                  {registro.historialUbicaciones.length} ubicaciones
+                                </div>
+                              )}
+                            </div>
+                          </td>
                           <td className="p-3 text-sm text-muted-foreground">
                             {format(new Date(registro.fecha), 'dd/MM/yyyy HH:mm', { locale: es })}
                           </td>
@@ -283,9 +292,14 @@ export default function DashboardPage() {
                               {registro.tipo === 'copia_simple' ? 'Copia simple' : 'Presentación'}
                             </p>
                           </div>
-                          <div>
-                            <span className="text-muted-foreground">Ubicación:</span>
-                            <p className="font-medium">{registro.ubicacion || 'Sin asignar'}</p>
+                          <div className="col-span-2">
+                            <span className="text-muted-foreground">Ubicación actual:</span>
+                            <p className="font-medium">{registro.ubicacionActual || 'Sin asignar'}</p>
+                            {registro.historialUbicaciones && registro.historialUbicaciones.length > 1 && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Recorrido: {registro.historialUbicaciones.map(u => u.lugar).join(' → ')}
+                              </p>
+                            )}
                           </div>
                         </div>
                         
