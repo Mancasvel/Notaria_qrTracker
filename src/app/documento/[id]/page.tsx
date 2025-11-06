@@ -185,10 +185,47 @@ export default function DocumentoDetailPage({ params }: PageProps) {
 
                 <div className="pt-4 border-t">
                   <label className="text-sm font-medium text-muted-foreground">Ubicación actual</label>
-                  <p className="text-xl font-semibold text-primary">{registro.ubicacion || 'Sin asignar'}</p>
+                  <p className="text-xl font-semibold text-primary">{registro.ubicacionActual || 'Sin asignar'}</p>
                 </div>
               </CardContent>
             </Card>
+
+            {/* Historial de ubicaciones */}
+            {registro.historialUbicaciones && registro.historialUbicaciones.length > 0 && (
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle>Recorrido del Documento</CardTitle>
+                  <CardDescription>
+                    Historial completo de ubicaciones
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {registro.historialUbicaciones.map((ubicacion, index) => (
+                      <div key={index} className="flex items-start gap-3 pb-3 border-b last:border-0">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
+                          {registro.historialUbicaciones.length - index}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <p className="font-semibold">{ubicacion.lugar}</p>
+                            {index === 0 && (
+                              <span className="px-2 py-1 rounded text-xs font-medium bg-primary/10 text-primary">
+                                Actual
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">Por: {ubicacion.usuario}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(ubicacion.fecha), "dd/MM/yyyy 'a las' HH:mm", { locale: es })}
+                          </p>
+                        </div>
+                      </div>
+                    )).reverse()}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* QR Code */}
             <Card>
