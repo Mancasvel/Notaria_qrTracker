@@ -1,14 +1,21 @@
 import mongoose from 'mongoose';
 
+export interface IUbicacion {
+  lugar: string; // nombre del despacho o "ARCHIVO"
+  usuario: string; // quien movió el documento
+  fecha: Date;
+}
+
 export interface IRegistro {
   _id?: mongoose.Types.ObjectId;
   numero: string;
   tipo: 'copia_simple' | 'presentacion_telematica';
   hecha: boolean;
   notario: 'MAPE' | 'MCVF';
-  usuario: string; // nombre del copista
+  usuario: string; // nombre del oficial que creó el registro
   fecha: Date;
-  ubicacion: string;
+  ubicacionActual: string; // última ubicación
+  historialUbicaciones: IUbicacion[]; // historial completo de movimientos
   qrCodeUrl: string;
   observaciones: string;
   createdAt?: Date;
@@ -44,11 +51,27 @@ const RegistroSchema = new mongoose.Schema<IRegistro>({
     type: Date,
     default: Date.now,
   },
-  ubicacion: {
+  ubicacionActual: {
     type: String,
     default: '',
     trim: true,
   },
+  historialUbicaciones: [{
+    lugar: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    usuario: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    fecha: {
+      type: Date,
+      default: Date.now,
+    },
+  }],
   qrCodeUrl: {
     type: String,
     default: '',
@@ -67,7 +90,7 @@ RegistroSchema.index({ numero: 1 });
 RegistroSchema.index({ notario: 1 });
 RegistroSchema.index({ usuario: 1 });
 RegistroSchema.index({ hecha: 1 });
-RegistroSchema.index({ ubicacion: 1 });
+RegistroSchema.index({ ubicacionActual: 1 });
 RegistroSchema.index({ fecha: -1 });
 
 // Check if the model already exists to prevent re-compilation errors
