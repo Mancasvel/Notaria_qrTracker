@@ -396,10 +396,34 @@ Funcionalidades planificadas para futuras versiones:
 4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
 5. Abre un Pull Request
 
-## 📄 Licencia
+## 📄 Licencia y Derechos de Autor
 
-Este proyecto está bajo la Licencia MIT.
+### ⚖️ Licencia Propietaria
+
+**© 2025 Manuel Castillejo. Todos los derechos reservados.**
+
+Este software es **código propietario y confidencial**. El uso, copia, modificación, distribución o cualquier otra forma de explotación de este código está **estrictamente prohibido** sin la autorización expresa y por escrito del autor.
+
+### 🔒 Restricciones de Uso
+
+- ❌ **Prohibida la reproducción** total o parcial del código
+- ❌ **Prohibida la distribución** sin licencia comercial
+- ❌ **Prohibido el uso comercial** sin autorización
+- ❌ **Prohibida la ingeniería inversa**
+- ❌ **Prohibida la creación de trabajos derivados** sin permiso
+
+### 💼 Licencia Comercial
+
+Para obtener una **licencia comercial** que permita el uso de este software, contacta con:
+
+**Manuel Castillejo**
+- 📧 Email: [Tu email de contacto]
+- 🌐 Web: [Tu sitio web]
+
+### ⚠️ Aviso Legal
+
+El uso no autorizado de este software constituye una **violación de los derechos de autor** y puede resultar en acciones legales civiles y penales según las leyes de propiedad intelectual aplicables.
 
 ---
 
-**Desarrollado con ❤️ para modernizar la gestión documental notarial**
+**Desarrollado con ❤️ por Manuel Castillejo para modernizar la gestión documental notarial**
