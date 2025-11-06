@@ -18,6 +18,7 @@ export default function EscanearPage() {
   const [isArchiving, setIsArchiving] = useState(false);
   const [cameras, setCameras] = useState<Array<{ id: string; label: string }>>([]);
   const [selectedCamera, setSelectedCamera] = useState<string>('');
+  const [diagnosticInfo, setDiagnosticInfo] = useState<string>('');
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const qrReaderRef = useRef<HTMLDivElement>(null);
 
@@ -74,11 +75,6 @@ export default function EscanearPage() {
   }
 
   const startScanning = async () => {
-    if (!selectedCamera) {
-      setMessage('⚠️ No hay cámaras disponibles');
-      return;
-    }
-
     setIsScanning(true);
     setMessage('Iniciando cámara...');
     setLastScanned('');
@@ -97,21 +93,70 @@ export default function EscanearPage() {
         scannerRef.current = null;
       }
 
+      // Esperar un momento para que la cámara se libere
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       // Crear nuevo scanner
       scannerRef.current = new Html5Qrcode('qr-reader');
 
-      // Intentar iniciar con la cámara seleccionada
-      await scannerRef.current.start(
-        selectedCamera,
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-        },
-        onScanSuccess,
-        onScanError
-      );
+      // Intentar primero con facingMode (más compatible)
+      let started = false;
       
-      setMessage('');
+      if (!selectedCamera || cameras.length === 0) {
+        // Método 1: Usar facingMode (más compatible)
+        try {
+          await scannerRef.current.start(
+            { facingMode: "environment" }, // Cámara trasera
+            {
+              fps: 10,
+              qrbox: { width: 250, height: 250 },
+            },
+            onScanSuccess,
+            onScanError
+          );
+          started = true;
+          setMessage('');
+        } catch (e) {
+          console.log('Failed with environment camera, trying user camera:', e);
+          
+          // Intentar con cámara frontal
+          try {
+            await scannerRef.current.start(
+              { facingMode: "user" }, // Cámara frontal
+              {
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+              },
+              onScanSuccess,
+              onScanError
+            );
+            started = true;
+            setMessage('');
+          } catch (e2) {
+            console.log('Failed with user camera:', e2);
+          }
+        }
+      }
+      
+      // Método 2: Si facingMode falla, intentar con ID de cámara específico
+      if (!started && selectedCamera) {
+        await scannerRef.current.start(
+          selectedCamera,
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+          },
+          onScanSuccess,
+          onScanError
+        );
+        started = true;
+        setMessage('');
+      }
+      
+      if (!started) {
+        throw new Error('No se pudo iniciar ninguna cámara');
+      }
+      
     } catch (err: any) {
       console.error('Error starting scanner:', err);
       
@@ -129,13 +174,13 @@ export default function EscanearPage() {
       let errorMessage = '⚠️ Error al iniciar la cámara.';
       
       if (err.name === 'NotReadableError' || err.message?.includes('not start video source')) {
-        errorMessage = '⚠️ La cámara está siendo usada por otra aplicación. Cierra otras apps que usen la cámara e intenta de nuevo.';
+        errorMessage = '⚠️ La cámara está siendo usada por otra aplicación. Cierra TODAS las pestañas del navegador que puedan estar usando la cámara (incluyendo WhatsApp Web, Meet, Zoom, etc.) y recarga esta página.';
       } else if (err.name === 'NotAllowedError' || err.message?.includes('Permission denied')) {
-        errorMessage = '⚠️ Permiso de cámara denegado. Por favor, permite el acceso a la cámara en la configuración de tu navegador.';
+        errorMessage = '⚠️ Permiso de cámara denegado. Haz clic en el icono de candado 🔒 en la barra de direcciones y permite el acceso a la cámara.';
       } else if (err.name === 'NotFoundError') {
         errorMessage = '⚠️ No se encontró ninguna cámara. Verifica que tu dispositivo tenga una cámara conectada.';
       } else if (err.name === 'OverconstrainedError') {
-        errorMessage = '⚠️ La cámara no cumple con los requisitos. Intenta con otra cámara.';
+        errorMessage = '⚠️ La cámara no cumple con los requisitos. Intenta recargar la página.';
       }
       
       setMessage(errorMessage);
@@ -216,6 +261,65 @@ export default function EscanearPage() {
     } catch (error) {
       console.error('Error processing QR:', error);
       setMessage('⚠️ Error al procesar el QR');
+    }
+  };
+
+  const runDiagnostics = async () => {
+    setDiagnosticInfo('🔍 Ejecutando diagnóstico...');
+    
+    try {
+      // Verificar permisos de cámara
+      const permissions = await navigator.permissions.query({ name: 'camera' as PermissionName });
+      let info = `📋 Estado de permisos: ${permissions.state}\n`;
+      
+      // Verificar MediaDevices
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        info += '❌ MediaDevices API no disponible\n';
+        info += '💡 Asegúrate de estar usando HTTPS o localhost\n';
+        setDiagnosticInfo(info);
+        return;
+      }
+      
+      info += '✅ MediaDevices API disponible\n';
+      
+      // Intentar obtener cámaras
+      try {
+        const devices = await Html5Qrcode.getCameras();
+        info += `📷 Cámaras detectadas: ${devices.length}\n`;
+        devices.forEach((device, i) => {
+          info += `  ${i + 1}. ${device.label || device.id}\n`;
+        });
+      } catch (e: any) {
+        info += `❌ Error al obtener cámaras: ${e.message}\n`;
+      }
+      
+      // Intentar acceso directo a la cámara
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        info += '✅ Acceso directo a cámara exitoso\n';
+        
+        // Obtener información del track
+        const videoTrack = stream.getVideoTracks()[0];
+        const settings = videoTrack.getSettings();
+        info += `📐 Resolución: ${settings.width}x${settings.height}\n`;
+        info += `🎥 Dispositivo: ${videoTrack.label}\n`;
+        
+        // Liberar el stream
+        stream.getTracks().forEach(track => track.stop());
+        info += '✅ Stream liberado correctamente\n';
+      } catch (e: any) {
+        info += `❌ Error al acceder a cámara: ${e.name} - ${e.message}\n`;
+        
+        if (e.name === 'NotReadableError') {
+          info += '💡 La cámara está en uso por otra aplicación\n';
+        } else if (e.name === 'NotAllowedError') {
+          info += '💡 Permisos denegados por el usuario\n';
+        }
+      }
+      
+      setDiagnosticInfo(info);
+    } catch (e: any) {
+      setDiagnosticInfo(`❌ Error en diagnóstico: ${e.message}`);
     }
   };
 
@@ -388,17 +492,55 @@ export default function EscanearPage() {
 
               {/* Ayuda para problemas */}
               {message.includes('⚠️') && (
-                <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 p-4 rounded-lg">
-                  <h3 className="font-medium mb-2 text-yellow-800 dark:text-yellow-200">🔧 Soluciones:</h3>
-                  <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
-                    <li>• Cierra otras aplicaciones que puedan estar usando la cámara</li>
-                    <li>• Verifica los permisos de cámara en la configuración del navegador</li>
-                    <li>• Recarga la página e intenta de nuevo</li>
+                <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 p-4 rounded-lg space-y-3">
+                  <h3 className="font-medium mb-2 text-yellow-800 dark:text-yellow-200">🔧 Soluciones paso a paso:</h3>
+                  <ol className="text-sm text-yellow-700 dark:text-yellow-300 space-y-2 list-decimal list-inside">
+                    <li><strong>Cierra otras pestañas</strong> que usen la cámara:
+                      <ul className="ml-6 mt-1 space-y-1 list-disc list-inside">
+                        <li>WhatsApp Web</li>
+                        <li>Google Meet / Zoom / Teams</li>
+                        <li>Otras páginas de esta app</li>
+                      </ul>
+                    </li>
+                    <li><strong>Cierra aplicaciones de escritorio</strong> que usen la cámara:
+                      <ul className="ml-6 mt-1 space-y-1 list-disc list-inside">
+                        <li>Skype, Discord, OBS</li>
+                        <li>Aplicaciones de videoconferencia</li>
+                      </ul>
+                    </li>
+                    <li><strong>Recarga esta página</strong> (F5 o Ctrl+R)</li>
+                    <li><strong>Verifica permisos:</strong> Haz clic en el 🔒 en la barra de direcciones → Permisos del sitio → Cámara → Permitir</li>
                     {cameras.length > 1 && (
-                      <li>• Prueba con otra cámara usando el selector</li>
+                      <li><strong>Prueba con otra cámara</strong> usando el selector de arriba</li>
                     )}
-                    <li>• Asegúrate de estar usando HTTPS o localhost</li>
-                  </ul>
+                    <li>Si nada funciona, <strong>reinicia el navegador</strong> completamente</li>
+                  </ol>
+                  
+                  <Button
+                    onClick={runDiagnostics}
+                    variant="outline"
+                    className="w-full text-yellow-800 dark:text-yellow-200 border-yellow-300 dark:border-yellow-700"
+                  >
+                    🔍 Ejecutar Diagnóstico Completo
+                  </Button>
+                </div>
+              )}
+
+              {/* Información de diagnóstico */}
+              {diagnosticInfo && (
+                <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-4 rounded-lg">
+                  <h3 className="font-medium mb-2 text-blue-800 dark:text-blue-200">📊 Diagnóstico del Sistema:</h3>
+                  <pre className="text-xs text-blue-700 dark:text-blue-300 whitespace-pre-wrap font-mono">
+                    {diagnosticInfo}
+                  </pre>
+                  <Button
+                    onClick={() => setDiagnosticInfo('')}
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 w-full text-blue-800 dark:text-blue-200 border-blue-300 dark:border-blue-700"
+                  >
+                    Cerrar
+                  </Button>
                 </div>
               )}
 
