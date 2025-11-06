@@ -87,16 +87,97 @@ export default function RegistrarPage() {
   };
 
   const handlePrint = () => {
-    // Cambiar el título del documento antes de imprimir
-    const originalTitle = document.title;
-    document.title = `QR_${registeredNumero.replace(/\//g, '-')}`;
+    // Crear un iframe oculto para imprimir solo el QR
+    const printFrame = document.createElement('iframe');
+    printFrame.style.position = 'absolute';
+    printFrame.style.width = '0';
+    printFrame.style.height = '0';
+    printFrame.style.border = 'none';
     
-    window.print();
+    document.body.appendChild(printFrame);
     
-    // Restaurar el título original después de imprimir
-    setTimeout(() => {
-      document.title = originalTitle;
-    }, 100);
+    const printDocument = printFrame.contentWindow?.document;
+    if (!printDocument) return;
+    
+    // Escribir el contenido HTML para imprimir
+    printDocument.open();
+    printDocument.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>QR_${registeredNumero.replace(/\//g, '-')}</title>
+          <style>
+            @page {
+              margin: 0;
+              size: A4 portrait;
+            }
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            body {
+              width: 100vw;
+              height: 100vh;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              background: white;
+              font-family: Arial, sans-serif;
+            }
+            .qr-container {
+              text-align: center;
+            }
+            .qr-image {
+              width: 12cm;
+              height: 12cm;
+              display: block;
+              margin: 0 auto;
+            }
+            .protocol-number {
+              font-size: 24pt;
+              font-weight: bold;
+              margin-top: 1cm;
+              color: black;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="qr-container">
+            <img src="${generatedQR}" alt="QR Code" class="qr-image" />
+            <div class="protocol-number">Protocolo: ${registeredNumero}</div>
+          </div>
+        </body>
+      </html>
+    `);
+    printDocument.close();
+    
+    // Esperar a que la imagen se cargue antes de imprimir
+    const img = printDocument.querySelector('img');
+    if (img) {
+      img.onload = () => {
+        setTimeout(() => {
+          printFrame.contentWindow?.print();
+          
+          // Eliminar el iframe después de imprimir
+          setTimeout(() => {
+            document.body.removeChild(printFrame);
+          }, 100);
+        }, 100);
+      };
+      
+      // Si la imagen ya está cargada (cache)
+      if (img.complete) {
+        setTimeout(() => {
+          printFrame.contentWindow?.print();
+          
+          setTimeout(() => {
+            document.body.removeChild(printFrame);
+          }, 100);
+        }, 100);
+      }
+    }
   };
 
 
@@ -207,21 +288,6 @@ export default function RegistrarPage() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Hidden QR container for printing */}
-        {generatedQR && (
-          <div className="qr-print-container" style={{ position: 'absolute', left: '-9999px', top: '0' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={generatedQR}
-              alt={`QR Code para documento ${registeredNumero}`}
-              className="qr-image"
-            />
-            <div className="protocol-number">
-              Protocolo: {registeredNumero}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
