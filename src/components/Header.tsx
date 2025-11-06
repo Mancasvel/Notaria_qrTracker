@@ -36,8 +36,8 @@ export function Header() {
       });
     }
 
-    // Copistas pueden registrar documentos
-    if (role === 'copias') {
+    // Copistas y oficiales pueden registrar documentos
+    if (role === 'copias' || role === 'oficial') {
       items.push({
         label: 'Registrar Documento',
         icon: <DocumentPlusIcon className="h-4 w-4" />,
@@ -45,8 +45,8 @@ export function Header() {
       });
     }
 
-    // Gestión y Oficial tienen página de inicio
-    if (role === 'gestion' || role === 'oficial') {
+    // Gestión tiene página de inicio
+    if (role === 'gestion') {
       items.push({
         label: 'Inicio',
         icon: <ChartBarIcon className="h-4 w-4" />,
@@ -106,7 +106,7 @@ export function Header() {
             </DropdownMenu>
 
             <h1 className="text-base sm:text-lg font-semibold truncate">
-              <span className="hidden md:inline">Registro de copias — Notaría</span>
+              <span className="hidden md:inline">Gestión Documental — Notaría</span>
               <span className="md:hidden">{getCurrentPageTitle()}</span>
             </h1>
           </div>
