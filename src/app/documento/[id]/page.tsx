@@ -302,6 +302,22 @@ export default function DocumentoDetailPage({ params }: PageProps) {
             </CardContent>
           </Card>
         </div>
+
+        {/* Hidden QR container for printing */}
+        {registro.qrCodeUrl && (
+          <div className="qr-print-container" style={{ display: 'none' }}>
+            <Image
+              src={registro.qrCodeUrl}
+              alt={`QR Code para documento ${registro.numero}`}
+              width={400}
+              height={400}
+              unoptimized
+            />
+            <div className="protocol-number">
+              Protocolo: {registro.numero}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

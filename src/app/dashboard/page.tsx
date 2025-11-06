@@ -42,18 +42,32 @@ export default function DashboardPage() {
   }, [filtros]);
 
   useEffect(() => {
-    if (session?.user.role === 'admin') {
+    if (session) {
       fetchRegistros();
     }
   }, [fetchRegistros, session]);
 
-  // Redirect if not authenticated or not admin role
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session) {
+      router.push('/login');
+    }
+  }, [session, status, router]);
+
   if (status === 'loading') {
-    return <div>Cargando...</div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Cargando...</p>
+        </div>
+      </div>
+    );
   }
 
-  if (!session || session.user.role !== 'admin') {
-    router.push('/login');
+  if (!session) {
     return null;
   }
 
@@ -220,10 +234,20 @@ export default function DashboardPage() {
                             {registro.tipo === 'copia_simple' ? 'Copia simple' : 'Presentación telemática'}
                           </td>
                           <td className="p-3">
-                            <Checkbox
-                              checked={registro.hecha}
-                              onChange={(e) => handleEstadoChange(registro._id, e.target.checked)}
-                            />
+                            {session.user.role === 'admin' ? (
+                              <Checkbox
+                                checked={registro.hecha}
+                                onChange={(e) => handleEstadoChange(registro._id, e.target.checked)}
+                              />
+                            ) : (
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                registro.hecha
+                                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                  : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                              }`}>
+                                {registro.hecha ? 'Hecha' : 'Pendiente'}
+                              </span>
+                            )}
                           </td>
                           <td className="p-3">{registro.notario}</td>
                           <td className="p-3">
