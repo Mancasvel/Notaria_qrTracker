@@ -14,6 +14,8 @@ export default function EscanearPage() {
   const [isScanning, setIsScanning] = useState(false);
   const [message, setMessage] = useState('');
   const [lastScanned, setLastScanned] = useState<string>('');
+  const [lastDocumentId, setLastDocumentId] = useState<string>('');
+  const [isArchiving, setIsArchiving] = useState(false);
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
 
   useEffect(() => {
@@ -78,6 +80,9 @@ export default function EscanearPage() {
         return;
       }
 
+      // Guardar el ID para la función de archivar
+      setLastDocumentId(documentId);
+
       // Enviar a la API para actualizar ubicación
       const response = await fetch('/api/escanear', {
         method: 'POST',
@@ -90,7 +95,7 @@ export default function EscanearPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage(`📍 ${data.message}`);
+        setMessage(`✅ ${data.message}`);
         // Detener escaneo después de éxito
         stopScanning();
       } else {
@@ -99,6 +104,40 @@ export default function EscanearPage() {
     } catch (error) {
       console.error('Error processing QR:', error);
       setMessage('⚠️ Error al procesar el QR');
+    }
+  };
+
+  const handleArchivar = async () => {
+    if (!lastDocumentId) {
+      setMessage('⚠️ Primero debes escanear un documento');
+      return;
+    }
+
+    setIsArchiving(true);
+    setMessage('');
+
+    try {
+      const response = await fetch('/api/archivar', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ documentId: lastDocumentId }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage(`✅ ${data.message}`);
+        setLastDocumentId('');
+      } else {
+        setMessage(`⚠️ ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error archiving document:', error);
+      setMessage('⚠️ Error al archivar el documento');
+    } finally {
+      setIsArchiving(false);
     }
   };
 
@@ -150,43 +189,62 @@ export default function EscanearPage() {
               )}
 
               {/* Controles */}
-              <div className="flex gap-4">
-                {!isScanning ? (
+              <div className="space-y-3">
+                <div className="flex gap-3">
+                  {!isScanning ? (
+                    <Button
+                      onClick={startScanning}
+                      className="flex-1 text-base sm:text-lg py-5 sm:py-6"
+                      size="lg"
+                    >
+                      📷 Escanear QR
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={stopScanning}
+                      variant="outline"
+                      className="flex-1 text-base sm:text-lg py-5 sm:py-6"
+                      size="lg"
+                    >
+                      ⏹️ Detener
+                    </Button>
+                  )}
+                </div>
+
+                {/* Botón de archivar (solo para copias) */}
+                {session.user.role === 'copias' && (
                   <Button
-                    onClick={startScanning}
-                    className="flex-1 text-lg py-6"
+                    onClick={handleArchivar}
+                    disabled={!lastDocumentId || isArchiving}
+                    variant="secondary"
+                    className="w-full text-base sm:text-lg py-5 sm:py-6"
                     size="lg"
                   >
-                    📷 Escanear QR
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={stopScanning}
-                    variant="outline"
-                    className="flex-1 text-lg py-6"
-                    size="lg"
-                  >
-                    ⏹️ Detener
+                    {isArchiving ? '⏳ Archivando...' : '📁 Archivar Documento'}
                   </Button>
                 )}
               </div>
 
               {/* Información adicional */}
               <div className="bg-muted/50 p-4 rounded-lg">
-                <h3 className="font-medium mb-2">💡 Consejos para escanear:</h3>
+                <h3 className="font-medium mb-2">💡 Instrucciones:</h3>
                 <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Asegúrate de tener permisos de cámara habilitados</li>
+                  <li>• Escanea el QR para registrar el documento en tu despacho</li>
+                  {session.user.role === 'copias' && (
+                    <li>• Usa &quot;Archivar&quot; para marcar un documento como archivado</li>
+                  )}
                   <li>• Mantén el QR dentro del marco de enfoque</li>
-                  <li>• Evita movimientos bruscos mientras escaneas</li>
-                  <li>• La ubicación se actualizará automáticamente a tu despacho</li>
+                  <li>• La ubicación se actualizará automáticamente</li>
                 </ul>
               </div>
 
               {/* Tu despacho actual */}
               <div className="text-center">
-                <p className="text-sm text-muted-foreground">Tu despacho actual:</p>
+                <p className="text-sm text-muted-foreground">
+                  {session.user.role === 'copias' ? 'Tu ubicación' : 'Tu despacho'}:
+                </p>
                 <p className="text-lg font-semibold text-primary">
-                  {session.user.despacho || 'No asignado'}
+                  {session.user.role === 'copias' ? 'ARCHIVO / ' : ''}{session.user.despacho || 'No asignado'}
                 </p>
               </div>
             </CardContent>
