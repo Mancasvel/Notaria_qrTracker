@@ -13,7 +13,8 @@ import { Header } from '@/components/Header';
 export default function RegistrarPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [numero, setNumero] = useState('');
+  const currentYear = new Date().getFullYear();
+  const [numero, setNumero] = useState(`${currentYear}-`);
   const [tipo, setTipo] = useState<'copia_simple' | 'presentacion_telematica'>('copia_simple');
   const [notario, setNotario] = useState<'MAPE' | 'MCVF'>('MAPE');
   const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +26,7 @@ export default function RegistrarPage() {
     return <div>Cargando...</div>;
   }
 
-  if (!session || session.user.role !== 'copias') {
+  if (!session || (session.user.role !== 'copias' && session.user.role !== 'oficial')) {
     router.push('/login');
     return null;
   }
@@ -54,7 +55,7 @@ export default function RegistrarPage() {
         setMessage('✅ Registrado correctamente');
         setGeneratedQR(data.registro.qrCodeUrl);
         // Limpiar formulario
-        setNumero('');
+        setNumero(`${currentYear}-`);
         setTipo('copia_simple');
         setNotario('MAPE');
       } else {
@@ -75,9 +76,9 @@ export default function RegistrarPage() {
         <div className="max-w-md mx-auto">
           <Card>
             <CardHeader className="px-4 sm:px-6">
-              <CardTitle className="text-xl sm:text-2xl">Registrar Copia</CardTitle>
+              <CardTitle className="text-xl sm:text-2xl">Registrar Documento</CardTitle>
               <CardDescription className="text-sm">
-                Ingresa los datos del documento a registrar
+                Ingresa los datos del documento para iniciar su seguimiento
               </CardDescription>
             </CardHeader>
             <CardContent className="px-4 sm:px-6">
@@ -89,7 +90,7 @@ export default function RegistrarPage() {
                   <Input
                     id="numero"
                     type="text"
-                    placeholder="Ej: 2024-001234"
+                    placeholder={`Ej: ${currentYear}-01234`}
                     value={numero}
                     onChange={(e) => setNumero(e.target.value)}
                     required
