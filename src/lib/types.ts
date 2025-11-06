@@ -9,6 +9,12 @@ export interface Usuario {
   updatedAt: Date;
 }
 
+export interface Ubicacion {
+  lugar: string;
+  usuario: string;
+  fecha: Date;
+}
+
 export interface Registro {
   _id: string;
   numero: string;
@@ -17,7 +23,8 @@ export interface Registro {
   notario: 'MAPE' | 'MCVF';
   usuario: string;
   fecha: Date;
-  ubicacion: string;
+  ubicacionActual: string;
+  historialUbicaciones: Ubicacion[];
   qrCodeUrl: string;
   observaciones: string;
   createdAt: Date;
