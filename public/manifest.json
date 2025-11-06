@@ -1,0 +1,44 @@
+{
+  "name": "Gestión de Copias - Notaría",
+  "short_name": "Copias Notaría",
+  "description": "Sistema de registro y seguimiento de copias de documentos en notaría",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "es-ES",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Registrar Copia",
+      "short_name": "Registrar",
+      "description": "Registrar una nueva copia",
+      "url": "/registrar",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Escanear QR",
+      "short_name": "Escanear",
+      "description": "Escanear código QR",
+      "url": "/escanear",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ],
+  "permissions": ["camera"]
+}
