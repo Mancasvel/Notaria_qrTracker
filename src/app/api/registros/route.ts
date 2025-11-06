@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
 import Registro from '@/models/Registro';
 import Usuario from '@/models/Usuario';
@@ -8,7 +9,7 @@ import { generateQRCode } from '@/lib/qr';
 // GET /api/registros - Obtener registros con filtros (solo admin)
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
 
     if (!session || session.user.role !== 'admin') {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
@@ -61,7 +62,7 @@ export async function GET(request: NextRequest) {
 // POST /api/registros - Crear nuevo registro (admin y copias)
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
 
     if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
