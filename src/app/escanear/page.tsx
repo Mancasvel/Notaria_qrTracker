@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Header } from '@/components/Header';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode';
 
 export default function EscanearPage() {
   const { data: session, status } = useSession();
@@ -16,50 +16,161 @@ export default function EscanearPage() {
   const [lastScanned, setLastScanned] = useState<string>('');
   const [lastDocumentId, setLastDocumentId] = useState<string>('');
   const [isArchiving, setIsArchiving] = useState(false);
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+  const [cameras, setCameras] = useState<Array<{ id: string; label: string }>>([]);
+  const [selectedCamera, setSelectedCamera] = useState<string>('');
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const qrReaderRef = useRef<HTMLDivElement>(null);
 
+  // Obtener lista de cámaras disponibles
   useEffect(() => {
+    Html5Qrcode.getCameras()
+      .then((devices) => {
+        if (devices && devices.length > 0) {
+          setCameras(devices.map((device) => ({ id: device.id, label: device.label || `Camera ${device.id}` })));
+          // Seleccionar la cámara trasera por defecto (si está disponible)
+          const backCamera = devices.find((device) => 
+            device.label.toLowerCase().includes('back') || 
+            device.label.toLowerCase().includes('rear') ||
+            device.label.toLowerCase().includes('trasera')
+          );
+          setSelectedCamera(backCamera?.id || devices[0].id);
+        }
+      })
+      .catch((err) => {
+        console.error('Error getting cameras:', err);
+        setMessage('⚠️ No se pudo acceder a las cámaras. Verifica los permisos.');
+      });
+
     return () => {
       // Cleanup scanner on unmount
-      if (scannerRef.current) {
-        scannerRef.current.clear().catch(console.error);
+      if (scannerRef.current && scannerRef.current.getState() === Html5QrcodeScannerState.SCANNING) {
+        scannerRef.current.stop().catch(console.error);
       }
     };
   }, []);
 
   // Redirect if not authenticated
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session) {
+      router.push('/login');
+    }
+  }, [session, status, router]);
+
   if (status === 'loading') {
-    return <div>Cargando...</div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Cargando...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!session) {
-    router.push('/login');
     return null;
   }
 
-  const startScanning = () => {
+  const startScanning = async () => {
+    if (!selectedCamera) {
+      setMessage('⚠️ No hay cámaras disponibles');
+      return;
+    }
+
     setIsScanning(true);
-    setMessage('');
+    setMessage('Iniciando cámara...');
+    setLastScanned('');
 
-    scannerRef.current = new Html5QrcodeScanner(
-      'qr-reader',
-      {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-        aspectRatio: 1.0,
-      },
-      false
-    );
+    try {
+      // Si ya existe un scanner, limpiarlo primero
+      if (scannerRef.current) {
+        try {
+          if (scannerRef.current.getState() === Html5QrcodeScannerState.SCANNING) {
+            await scannerRef.current.stop();
+          }
+          await scannerRef.current.clear();
+        } catch (e) {
+          console.log('Error cleaning previous scanner:', e);
+        }
+        scannerRef.current = null;
+      }
 
-    scannerRef.current.render(onScanSuccess, onScanError);
+      // Crear nuevo scanner
+      scannerRef.current = new Html5Qrcode('qr-reader');
+
+      // Intentar iniciar con la cámara seleccionada
+      await scannerRef.current.start(
+        selectedCamera,
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+        },
+        onScanSuccess,
+        onScanError
+      );
+      
+      setMessage('');
+    } catch (err: any) {
+      console.error('Error starting scanner:', err);
+      
+      // Limpiar el scanner fallido
+      if (scannerRef.current) {
+        try {
+          await scannerRef.current.clear();
+        } catch (e) {
+          console.log('Error clearing failed scanner:', e);
+        }
+        scannerRef.current = null;
+      }
+      
+      // Mensajes de error específicos
+      let errorMessage = '⚠️ Error al iniciar la cámara.';
+      
+      if (err.name === 'NotReadableError' || err.message?.includes('not start video source')) {
+        errorMessage = '⚠️ La cámara está siendo usada por otra aplicación. Cierra otras apps que usen la cámara e intenta de nuevo.';
+      } else if (err.name === 'NotAllowedError' || err.message?.includes('Permission denied')) {
+        errorMessage = '⚠️ Permiso de cámara denegado. Por favor, permite el acceso a la cámara en la configuración de tu navegador.';
+      } else if (err.name === 'NotFoundError') {
+        errorMessage = '⚠️ No se encontró ninguna cámara. Verifica que tu dispositivo tenga una cámara conectada.';
+      } else if (err.name === 'OverconstrainedError') {
+        errorMessage = '⚠️ La cámara no cumple con los requisitos. Intenta con otra cámara.';
+      }
+      
+      setMessage(errorMessage);
+      setIsScanning(false);
+    }
   };
 
-  const stopScanning = () => {
+  const stopScanning = async () => {
     if (scannerRef.current) {
-      scannerRef.current.clear().catch(console.error);
+      try {
+        const state = scannerRef.current.getState();
+        if (state === Html5QrcodeScannerState.SCANNING) {
+          await scannerRef.current.stop();
+        }
+        await scannerRef.current.clear();
+      } catch (err) {
+        console.error('Error stopping scanner:', err);
+      }
       scannerRef.current = null;
     }
     setIsScanning(false);
+  };
+
+  const switchCamera = async () => {
+    if (cameras.length <= 1) return;
+    
+    // Detener el escaneo actual
+    await stopScanning();
+    
+    // Cambiar a la siguiente cámara
+    const currentIndex = cameras.findIndex(c => c.id === selectedCamera);
+    const nextIndex = (currentIndex + 1) % cameras.length;
+    setSelectedCamera(cameras[nextIndex].id);
+    
+    setMessage(`📷 Cambiado a: ${cameras[nextIndex].label}`);
   };
 
   const onScanSuccess = async (decodedText: string) => {
@@ -68,6 +179,9 @@ export default function EscanearPage() {
       return;
     }
     setLastScanned(decodedText);
+
+    // Detener escaneo inmediatamente después de leer
+    await stopScanning();
 
     try {
       // Extraer el ID del documento de la URL
@@ -96,8 +210,6 @@ export default function EscanearPage() {
 
       if (response.ok) {
         setMessage(`✅ ${data.message}`);
-        // Detener escaneo después de éxito
-        stopScanning();
       } else {
         setMessage(`⚠️ ${data.error}`);
       }
@@ -188,6 +300,24 @@ export default function EscanearPage() {
                 </div>
               )}
 
+              {/* Selector de cámara */}
+              {cameras.length > 1 && !isScanning && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Seleccionar cámara:</label>
+                  <select
+                    value={selectedCamera}
+                    onChange={(e) => setSelectedCamera(e.target.value)}
+                    className="w-full p-3 border border-input rounded-md bg-background text-sm"
+                  >
+                    {cameras.map((camera) => (
+                      <option key={camera.id} value={camera.id}>
+                        {camera.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               {/* Controles */}
               <div className="space-y-3">
                 <div className="flex gap-3">
@@ -196,18 +326,32 @@ export default function EscanearPage() {
                       onClick={startScanning}
                       className="flex-1 text-base sm:text-lg py-5 sm:py-6"
                       size="lg"
+                      disabled={!selectedCamera}
                     >
                       📷 Escanear QR
                     </Button>
                   ) : (
-                    <Button
-                      onClick={stopScanning}
-                      variant="outline"
-                      className="flex-1 text-base sm:text-lg py-5 sm:py-6"
-                      size="lg"
-                    >
-                      ⏹️ Detener
-                    </Button>
+                    <>
+                      <Button
+                        onClick={stopScanning}
+                        variant="outline"
+                        className="flex-1 text-base sm:text-lg py-5 sm:py-6"
+                        size="lg"
+                      >
+                        ⏹️ Detener
+                      </Button>
+                      {cameras.length > 1 && (
+                        <Button
+                          onClick={switchCamera}
+                          variant="secondary"
+                          className="text-base sm:text-lg py-5 sm:py-6"
+                          size="lg"
+                          title="Cambiar cámara"
+                        >
+                          🔄
+                        </Button>
+                      )}
+                    </>
                   )}
                 </div>
 
@@ -229,14 +373,34 @@ export default function EscanearPage() {
               <div className="bg-muted/50 p-4 rounded-lg">
                 <h3 className="font-medium mb-2">💡 Instrucciones:</h3>
                 <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Permite el acceso a la cámara cuando el navegador lo solicite</li>
                   <li>• Escanea el QR para registrar el documento en tu despacho</li>
                   {session.user.role === 'copias' && (
                     <li>• Usa &quot;Archivar&quot; para marcar un documento como archivado</li>
                   )}
                   <li>• Mantén el QR dentro del marco de enfoque</li>
                   <li>• La ubicación se actualizará automáticamente</li>
+                  {cameras.length > 1 && (
+                    <li>• Usa el botón 🔄 para cambiar de cámara mientras escaneas</li>
+                  )}
                 </ul>
               </div>
+
+              {/* Ayuda para problemas */}
+              {message.includes('⚠️') && (
+                <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 p-4 rounded-lg">
+                  <h3 className="font-medium mb-2 text-yellow-800 dark:text-yellow-200">🔧 Soluciones:</h3>
+                  <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
+                    <li>• Cierra otras aplicaciones que puedan estar usando la cámara</li>
+                    <li>• Verifica los permisos de cámara en la configuración del navegador</li>
+                    <li>• Recarga la página e intenta de nuevo</li>
+                    {cameras.length > 1 && (
+                      <li>• Prueba con otra cámara usando el selector</li>
+                    )}
+                    <li>• Asegúrate de estar usando HTTPS o localhost</li>
+                  </ul>
+                </div>
+              )}
 
               {/* Tu despacho actual */}
               <div className="text-center">
