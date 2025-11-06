@@ -44,10 +44,11 @@ export default withAuth(
     if (isAuth && isAuthPage) {
       if (token.role === 'admin') {
         return NextResponse.redirect(new URL('/dashboard', req.url));
-      } else if (token.role === 'copias') {
+      } else if (token.role === 'copias' || token.role === 'oficial') {
+        // Copias y oficiales pueden registrar
         return NextResponse.redirect(new URL('/registrar', req.url));
       } else {
-        // gestion, oficial y otros roles van a inicio
+        // gestión va a inicio
         return NextResponse.redirect(new URL('/inicio', req.url));
       }
     }
@@ -59,15 +60,15 @@ export default withAuth(
 
       // Only admins can access dashboard
       if (isDashboardPage && token.role !== 'admin') {
-        if (token.role === 'copias') {
+        if (token.role === 'copias' || token.role === 'oficial') {
           return NextResponse.redirect(new URL('/registrar', req.url));
         } else {
           return NextResponse.redirect(new URL('/inicio', req.url));
         }
       }
 
-      // Only copias can access registrar
-      if (isRegistrarPage && token.role !== 'copias') {
+      // Copias y oficiales pueden acceder a registrar
+      if (isRegistrarPage && token.role !== 'copias' && token.role !== 'oficial') {
         if (token.role === 'admin') {
           return NextResponse.redirect(new URL('/dashboard', req.url));
         } else {
