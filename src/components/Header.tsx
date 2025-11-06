@@ -27,14 +27,12 @@ export function Header() {
     const role = session.user.role;
     const items = [];
 
-    // Admin tiene acceso al dashboard
-    if (role === 'admin') {
-      items.push({
-        label: 'Dashboard',
-        icon: <ChartBarIcon className="h-4 w-4" />,
-        path: '/dashboard',
-      });
-    }
+    // Todos tienen acceso al dashboard
+    items.push({
+      label: 'Dashboard',
+      icon: <ChartBarIcon className="h-4 w-4" />,
+      path: '/dashboard',
+    });
 
     // Copistas y oficiales pueden registrar documentos
     if (role === 'copias' || role === 'oficial') {
@@ -42,15 +40,6 @@ export function Header() {
         label: 'Registrar Documento',
         icon: <DocumentPlusIcon className="h-4 w-4" />,
         path: '/registrar',
-      });
-    }
-
-    // Gestión tiene página de inicio
-    if (role === 'gestion') {
-      items.push({
-        label: 'Inicio',
-        icon: <ChartBarIcon className="h-4 w-4" />,
-        path: '/inicio',
       });
     }
 

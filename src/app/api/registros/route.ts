@@ -6,12 +6,12 @@ import Registro from '@/models/Registro';
 import Usuario from '@/models/Usuario';
 import { generateQRCode } from '@/lib/qr';
 
-// GET /api/registros - Obtener registros con filtros (solo admin)
+// GET /api/registros - Obtener registros con filtros (todos los usuarios autenticados)
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session || session.user.role !== 'admin') {
+    if (!session) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 

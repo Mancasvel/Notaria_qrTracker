@@ -80,3 +80,60 @@ input, textarea, select {
 * {
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
+
+/* Print styles for QR codes */
+@media print {
+  /* Hide everything by default */
+  body * {
+    visibility: hidden;
+    display: none;
+  }
+  
+  /* Show only the QR print container and its children */
+  .qr-print-container,
+  .qr-print-container * {
+    visibility: visible !important;
+    display: block !important;
+  }
+  
+  /* Position the QR container at the top of the page */
+  .qr-print-container {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: white !important;
+    padding: 2cm !important;
+    margin: 0 !important;
+  }
+  
+  /* Remove page margins */
+  @page {
+    margin: 0;
+    size: A4 portrait;
+  }
+  
+  /* Ensure QR image is large and centered */
+  .qr-print-container .qr-image {
+    display: block !important;
+    width: 12cm !important;
+    height: 12cm !important;
+    object-fit: contain !important;
+    margin: 0 auto !important;
+  }
+  
+  /* Style the protocol number for print */
+  .qr-print-container .protocol-number {
+    display: block !important;
+    font-size: 24pt !important;
+    font-weight: bold !important;
+    margin-top: 1cm !important;
+    color: black !important;
+    text-align: center !important;
+  }
+}

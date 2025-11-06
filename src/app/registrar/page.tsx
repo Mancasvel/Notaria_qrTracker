@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -20,14 +20,31 @@ export default function RegistrarPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [generatedQR, setGeneratedQR] = useState<string>('');
+  const [registeredNumero, setRegisteredNumero] = useState<string>('');
 
-  // Redirect if not authenticated or not copias role
+  // Redirect if not authenticated or not copias/oficial role
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session || (session.user.role !== 'copias' && session.user.role !== 'oficial')) {
+      router.push('/login');
+    }
+  }, [session, status, router]);
+
+  // Show loading state
   if (status === 'loading') {
-    return <div>Cargando...</div>;
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Cargando...</p>
+        </div>
+      </div>
+    );
   }
 
+  // Don't render if not authorized (will redirect)
   if (!session || (session.user.role !== 'copias' && session.user.role !== 'oficial')) {
-    router.push('/login');
     return null;
   }
 
@@ -54,6 +71,7 @@ export default function RegistrarPage() {
       if (response.ok) {
         setMessage('✅ Registrado correctamente');
         setGeneratedQR(data.registro.qrCodeUrl);
+        setRegisteredNumero(data.registro.numero);
         // Limpiar formulario
         setNumero(`${currentYear}-`);
         setTipo('copia_simple');
@@ -66,6 +84,19 @@ export default function RegistrarPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handlePrint = () => {
+    // Cambiar el título del documento antes de imprimir
+    const originalTitle = document.title;
+    document.title = `QR_${registeredNumero.replace(/\//g, '-')}`;
+    
+    window.print();
+    
+    // Restaurar el título original después de imprimir
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 100);
   };
 
 
@@ -164,7 +195,7 @@ export default function RegistrarPage() {
                       Imprime este QR y pégalo en el documento físico
                     </p>
                     <Button
-                      onClick={() => window.print()}
+                      onClick={handlePrint}
                       variant="outline"
                       className="w-full"
                     >
@@ -176,6 +207,21 @@ export default function RegistrarPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Hidden QR container for printing */}
+        {generatedQR && (
+          <div className="qr-print-container" style={{ position: 'absolute', left: '-9999px', top: '0' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={generatedQR}
+              alt={`QR Code para documento ${registeredNumero}`}
+              className="qr-image"
+            />
+            <div className="protocol-number">
+              Protocolo: {registeredNumero}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

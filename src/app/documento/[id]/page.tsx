@@ -80,6 +80,21 @@ export default function DocumentoDetailPage({ params }: PageProps) {
     }
   };
 
+  const handlePrint = () => {
+    if (!registro) return;
+    
+    // Cambiar el título del documento antes de imprimir
+    const originalTitle = document.title;
+    document.title = `QR_${registro.numero.replace(/\//g, '-')}`;
+    
+    window.print();
+    
+    // Restaurar el título original después de imprimir
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 100);
+  };
+
   useEffect(() => {
     if (id) {
       fetchRegistro();
@@ -247,7 +262,7 @@ export default function DocumentoDetailPage({ params }: PageProps) {
                       unoptimized
                     />
                     <Button
-                      onClick={() => window.print()}
+                      onClick={handlePrint}
                       className="w-full"
                     >
                       🖨️ Imprimir QR
@@ -305,13 +320,12 @@ export default function DocumentoDetailPage({ params }: PageProps) {
 
         {/* Hidden QR container for printing */}
         {registro.qrCodeUrl && (
-          <div className="qr-print-container" style={{ display: 'none' }}>
-            <Image
+          <div className="qr-print-container" style={{ position: 'absolute', left: '-9999px', top: '0' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={registro.qrCodeUrl}
               alt={`QR Code para documento ${registro.numero}`}
-              width={400}
-              height={400}
-              unoptimized
+              className="qr-image"
             />
             <div className="protocol-number">
               Protocolo: {registro.numero}
