@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import dbConnect from '@/lib/mongodb';
 import Registro from '@/models/Registro';
 import Usuario from '@/models/Usuario';
@@ -8,7 +9,7 @@ import mongoose from 'mongoose';
 // POST /api/archivar - Archivar documento (solo copias)
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
 
     if (!session || !session.user?.id) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
