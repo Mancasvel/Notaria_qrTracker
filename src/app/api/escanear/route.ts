@@ -35,23 +35,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Usuario o despacho no encontrado' }, { status: 404 });
     }
 
-    // Buscar y actualizar el registro
-    const registro = await Registro.findByIdAndUpdate(
-      documentId,
-      { ubicacion: usuario.despacho },
-      { new: true, runValidators: true }
-    );
-
+    // Buscar el registro
+    const registro = await Registro.findById(documentId);
     if (!registro) {
       return NextResponse.json({ error: 'Documento no encontrado' }, { status: 404 });
     }
+
+    // Agregar nueva ubicación al historial
+    registro.historialUbicaciones.push({
+      lugar: usuario.despacho,
+      usuario: usuario.nombre,
+      fecha: new Date(),
+    });
+    registro.ubicacionActual = usuario.despacho;
+
+    await registro.save();
 
     return NextResponse.json({
       message: `Documento ${registro.numero} ahora está en ${usuario.despacho}`,
       registro: {
         numero: registro.numero,
-        ubicacion: registro.ubicacion,
-        despacho: usuario.despacho,
+        ubicacionActual: registro.ubicacionActual,
+        historialUbicaciones: registro.historialUbicaciones,
       }
     });
   } catch (error) {
