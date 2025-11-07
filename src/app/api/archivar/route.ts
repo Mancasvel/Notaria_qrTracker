@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Solo copias pueden archivar
-    if (session.user.role !== 'copias') {
+    if (session.user.role !== 'copista') {
       return NextResponse.json({ error: 'Solo el personal de copias puede archivar documentos' }, { status: 403 });
     }
 
