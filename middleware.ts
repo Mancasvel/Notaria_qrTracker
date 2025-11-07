@@ -50,8 +50,8 @@ export default withAuth(
     if (isAuth) {
       const isRegistrarPage = req.nextUrl.pathname.startsWith('/registrar');
 
-      // Copias y oficiales pueden acceder a registrar
-      if (isRegistrarPage && token.role !== 'copias' && token.role !== 'oficial') {
+      // Copistas y oficiales pueden acceder a registrar
+      if (isRegistrarPage && token.role !== 'copista' && token.role !== 'oficial') {
         return NextResponse.redirect(new URL('/dashboard', req.url));
       }
     }
