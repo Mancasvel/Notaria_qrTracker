@@ -61,40 +61,101 @@ async function seedDatabase() {
     credentials.push({ email: 'admin@notaria.com', password: adminPassword, role: 'admin', despacho: 'DESPACHO_ADMIN' });
     console.log('✓ Created admin user');
 
-    // Create copias user
-    const copiasPassword = generateSecurePassword();
-    const copiasPasswordHash = await bcrypt.hash(copiasPassword, 12);
-    const copiasUser = new Usuario({
-      email: 'copias@notaria.com',
+    // Create oficial user
+    const oficialPassword = generateSecurePassword();
+    const oficialPasswordHash = await bcrypt.hash(oficialPassword, 12);
+    const oficialUser = new Usuario({
+      email: 'oficial@notaria.com',
       nombre: 'Juan Pérez',
-      rol: 'copias',
-      despacho: 'DESPACHO1',
-      passwordHash: copiasPasswordHash,
+      rol: 'oficial',
+      despacho: 'DESPACHO_OFICIAL',
+      notarioAsignado: 'MAPE',
+      passwordHash: oficialPasswordHash,
     });
-    await copiasUser.save();
-    credentials.push({ email: 'copias@notaria.com', password: copiasPassword, role: 'copias', despacho: 'DESPACHO1' });
-    console.log('✓ Created copias user');
+    await oficialUser.save();
+    credentials.push({ email: 'oficial@notaria.com', password: oficialPassword, role: 'oficial', despacho: 'DESPACHO_OFICIAL' });
+    console.log('✓ Created oficial user');
 
-    // Create another copias user
-    const copiasPassword2 = generateSecurePassword();
-    const copiasPassword2Hash = await bcrypt.hash(copiasPassword2, 12);
-    const copiasUser2 = new Usuario({
-      email: 'copias2@notaria.com',
-      nombre: 'María García',
-      rol: 'copias',
-      despacho: 'DESPACHO2',
-      passwordHash: copiasPassword2Hash,
+    // Create notario MAPE
+    const notarioMAPEPassword = generateSecurePassword();
+    const notarioMAPEPasswordHash = await bcrypt.hash(notarioMAPEPassword, 12);
+    const notarioMAPE = new Usuario({
+      email: 'notario.mape@notaria.com',
+      nombre: 'Notario MAPE',
+      rol: 'notario',
+      despacho: 'DESPACHO_MAPE',
+      notarioAsignado: 'MAPE',
+      passwordHash: notarioMAPEPasswordHash,
     });
-    await copiasUser2.save();
-    credentials.push({ email: 'copias2@notaria.com', password: copiasPassword2, role: 'copias', despacho: 'DESPACHO2' });
-    console.log('✓ Created copias user 2');
+    await notarioMAPE.save();
+    credentials.push({ email: 'notario.mape@notaria.com', password: notarioMAPEPassword, role: 'notario', despacho: 'DESPACHO_MAPE' });
+    console.log('✓ Created notario MAPE user');
+
+    // Create notario MCVF
+    const notarioMCVFPassword = generateSecurePassword();
+    const notarioMCVFPasswordHash = await bcrypt.hash(notarioMCVFPassword, 12);
+    const notarioMCVF = new Usuario({
+      email: 'notario.mcvf@notaria.com',
+      nombre: 'Notario MCVF',
+      rol: 'notario',
+      despacho: 'DESPACHO_MCVF',
+      notarioAsignado: 'MCVF',
+      passwordHash: notarioMCVFPasswordHash,
+    });
+    await notarioMCVF.save();
+    credentials.push({ email: 'notario.mcvf@notaria.com', password: notarioMCVFPassword, role: 'notario', despacho: 'DESPACHO_MCVF' });
+    console.log('✓ Created notario MCVF user');
+
+    // Create copista user
+    const copistaPassword = generateSecurePassword();
+    const copistaPasswordHash = await bcrypt.hash(copistaPassword, 12);
+    const copistaUser = new Usuario({
+      email: 'copista@notaria.com',
+      nombre: 'María García',
+      rol: 'copista',
+      despacho: 'DESPACHO_COPISTA',
+      notarioAsignado: 'MAPE',
+      passwordHash: copistaPasswordHash,
+    });
+    await copistaUser.save();
+    credentials.push({ email: 'copista@notaria.com', password: copistaPassword, role: 'copista', despacho: 'DESPACHO_COPISTA' });
+    console.log('✓ Created copista user');
+
+    // Create mostrador user
+    const mostradorPassword = generateSecurePassword();
+    const mostradorPasswordHash = await bcrypt.hash(mostradorPassword, 12);
+    const mostradorUser = new Usuario({
+      email: 'mostrador@notaria.com',
+      nombre: 'Carlos López',
+      rol: 'mostrador',
+      despacho: 'MOSTRADOR',
+      passwordHash: mostradorPasswordHash,
+    });
+    await mostradorUser.save();
+    credentials.push({ email: 'mostrador@notaria.com', password: mostradorPassword, role: 'mostrador', despacho: 'MOSTRADOR' });
+    console.log('✓ Created mostrador user');
+
+    // Create contabilidad user
+    const contabilidadPassword = generateSecurePassword();
+    const contabilidadPasswordHash = await bcrypt.hash(contabilidadPassword, 12);
+    const contabilidadUser = new Usuario({
+      email: 'contabilidad@notaria.com',
+      nombre: 'Ana Martínez',
+      rol: 'contabilidad',
+      despacho: 'DESPACHO_CONTABILIDAD',
+      notarioAsignado: 'MCVF',
+      passwordHash: contabilidadPasswordHash,
+    });
+    await contabilidadUser.save();
+    credentials.push({ email: 'contabilidad@notaria.com', password: contabilidadPassword, role: 'contabilidad', despacho: 'DESPACHO_CONTABILIDAD' });
+    console.log('✓ Created contabilidad user');
 
     // Create gestion user
     const gestionPassword = generateSecurePassword();
     const gestionPasswordHash = await bcrypt.hash(gestionPassword, 12);
     const gestionUser = new Usuario({
       email: 'gestion@notaria.com',
-      nombre: 'Carlos López',
+      nombre: 'Laura Fernández',
       rol: 'gestion',
       despacho: 'DESPACHO_GESTION',
       passwordHash: gestionPasswordHash,
@@ -102,20 +163,6 @@ async function seedDatabase() {
     await gestionUser.save();
     credentials.push({ email: 'gestion@notaria.com', password: gestionPassword, role: 'gestion', despacho: 'DESPACHO_GESTION' });
     console.log('✓ Created gestion user');
-
-    // Create oficial user
-    const oficialPassword = generateSecurePassword();
-    const oficialPasswordHash = await bcrypt.hash(oficialPassword, 12);
-    const oficialUser = new Usuario({
-      email: 'oficial@notaria.com',
-      nombre: 'Ana Rodríguez',
-      rol: 'oficial',
-      despacho: 'DESPACHO_OFICIAL',
-      passwordHash: oficialPasswordHash,
-    });
-    await oficialUser.save();
-    credentials.push({ email: 'oficial@notaria.com', password: oficialPassword, role: 'oficial', despacho: 'DESPACHO_OFICIAL' });
-    console.log('✓ Created oficial user');
 
     // Create some sample registros
     const sampleRegistros = [
@@ -126,77 +173,79 @@ async function seedDatabase() {
         notario: 'MAPE' as const,
         usuario: 'Juan Pérez',
         fecha: new Date('2025-01-15'),
-        ubicacionActual: 'DESPACHO1',
+        ubicacionActual: 'MATRIZ',
         historialUbicaciones: [{
-          lugar: 'DESPACHO1',
+          lugar: 'MATRIZ',
           usuario: 'Juan Pérez',
           fecha: new Date('2025-01-15'),
         }],
         qrCodeUrl: '',
-        observaciones: 'Documento registrado correctamente',
+        observaciones: 'Documento en matriz para revisión',
       },
       {
         numero: '2025-0002',
         tipo: 'presentacion_telematica' as const,
         hecha: true,
         notario: 'MCVF' as const,
-        usuario: 'Ana Rodríguez',
+        usuario: 'María García',
         fecha: new Date('2025-01-16'),
         ubicacionActual: 'ARCHIVO',
         historialUbicaciones: [
-          { lugar: 'DESPACHO_OFICIAL', usuario: 'Ana Rodríguez', fecha: new Date('2025-01-16T09:00:00') },
-          { lugar: 'DESPACHO_GESTION', usuario: 'Carlos López', fecha: new Date('2025-01-16T14:00:00') },
-          { lugar: 'ARCHIVO', usuario: 'Juan Pérez', fecha: new Date('2025-01-16T16:00:00') },
+          { lugar: 'DESPACHO_COPISTA', usuario: 'María García', fecha: new Date('2025-01-16T09:00:00') },
+          { lugar: '1_PRESENTACION', usuario: 'María García', fecha: new Date('2025-01-16T10:00:00') },
+          { lugar: 'DESPACHO_MCVF', usuario: 'Notario MCVF', fecha: new Date('2025-01-16T14:00:00') },
+          { lugar: 'ARCHIVO', usuario: 'María García', fecha: new Date('2025-01-16T16:00:00') },
         ],
         qrCodeUrl: '',
         observaciones: 'Presentación telemática completada y archivada',
       },
       {
         numero: '2025-0003',
-        tipo: 'presentacion_telematica' as const,
+        tipo: 'copia_simple' as const,
         hecha: false,
         notario: 'MAPE' as const,
-        usuario: 'Ana Rodríguez',
+        usuario: 'Juan Pérez',
         fecha: new Date('2025-01-17'),
-        ubicacionActual: 'DESPACHO2',
+        ubicacionActual: 'MOSTRADOR',
         historialUbicaciones: [
-          { lugar: 'DESPACHO_OFICIAL', usuario: 'Ana Rodríguez', fecha: new Date('2025-01-17T10:00:00') },
-          { lugar: 'DESPACHO2', usuario: 'María García', fecha: new Date('2025-01-17T15:00:00') },
+          { lugar: 'DESPACHO_OFICIAL', usuario: 'Juan Pérez', fecha: new Date('2025-01-17T10:00:00') },
+          { lugar: 'DILIGENCIA', usuario: 'Juan Pérez', fecha: new Date('2025-01-17T11:00:00') },
+          { lugar: 'MOSTRADOR', usuario: 'Carlos López', fecha: new Date('2025-01-17T15:00:00') },
         ],
         qrCodeUrl: '',
-        observaciones: 'Pendiente de presentación telemática',
+        observaciones: 'Documento en mostrador para entrega',
       },
       {
         numero: '2025-0004',
-        tipo: 'copia_simple' as const,
+        tipo: 'presentacion_telematica' as const,
         hecha: false,
         notario: 'MCVF' as const,
-        usuario: 'Ana Rodríguez',
+        usuario: 'Ana Martínez',
         fecha: new Date('2025-01-18'),
-        ubicacionActual: 'DESPACHO_OFICIAL',
+        ubicacionActual: 'FACTURA',
         historialUbicaciones: [{
-          lugar: 'DESPACHO_OFICIAL',
-          usuario: 'Ana Rodríguez',
+          lugar: 'FACTURA',
+          usuario: 'Ana Martínez',
           fecha: new Date('2025-01-18'),
         }],
         qrCodeUrl: '',
-        observaciones: '',
+        observaciones: 'Pendiente de facturación',
       },
       {
         numero: '2025-0005',
-        tipo: 'presentacion_telematica' as const,
-        hecha: true,
+        tipo: 'copia_simple' as const,
+        hecha: false,
         notario: 'MAPE' as const,
-        usuario: 'Ana Rodríguez',
+        usuario: 'María García',
         fecha: new Date('2025-01-19'),
-        ubicacionActual: 'DESPACHO_ADMIN',
+        ubicacionActual: 'CATASTRO',
         historialUbicaciones: [
-          { lugar: 'DESPACHO_OFICIAL', usuario: 'Ana Rodríguez', fecha: new Date('2025-01-19T08:00:00') },
-          { lugar: 'DESPACHO1', usuario: 'Juan Pérez', fecha: new Date('2025-01-19T11:00:00') },
-          { lugar: 'DESPACHO_ADMIN', usuario: 'Administrador', fecha: new Date('2025-01-19T14:00:00') },
+          { lugar: 'DESPACHO_COPISTA', usuario: 'María García', fecha: new Date('2025-01-19T08:00:00') },
+          { lugar: 'COPIA', usuario: 'María García', fecha: new Date('2025-01-19T09:00:00') },
+          { lugar: 'CATASTRO', usuario: 'María García', fecha: new Date('2025-01-19T11:00:00') },
         ],
         qrCodeUrl: '',
-        observaciones: 'Revisado y aprobado por administración',
+        observaciones: 'Enviado a catastro para registro',
       },
     ];
 
