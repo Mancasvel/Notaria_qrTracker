@@ -2,7 +2,7 @@ export interface Usuario {
   _id: string;
   email: string;
   nombre: string;
-  rol: 'admin' | 'copias' | 'gestion' | 'oficial';
+  rol: 'admin' | 'oficial' | 'notario' | 'copista' | 'mostrador' | 'contabilidad' | 'gestion';
   despacho: string;
   passwordHash: string;
   createdAt: Date;
