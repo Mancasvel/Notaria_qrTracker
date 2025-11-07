@@ -35,7 +35,7 @@ export function Header() {
     });
 
     // Copistas y oficiales pueden registrar documentos
-    if (role === 'copias' || role === 'oficial') {
+    if (role === 'copista' || role === 'oficial') {
       items.push({
         label: 'Registrar Documento',
         icon: <DocumentPlusIcon className="h-4 w-4" />,

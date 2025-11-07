@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     await dbConnect();
 
     const body = await request.json();
-    const { documentId } = body;
+    const { documentId, ubicacion } = body;
 
     // Validar que documentId esté presente
     if (!documentId) {
@@ -30,10 +30,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'ID de documento inválido' }, { status: 400 });
     }
 
-    // Obtener el usuario para saber su despacho
+    // Obtener el usuario para saber su despacho y rol
     const usuario = await Usuario.findById(session.user.id);
-    if (!usuario || !usuario.despacho) {
-      return NextResponse.json({ error: 'Usuario o despacho no encontrado' }, { status: 404 });
+    if (!usuario) {
+      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
     }
 
     // Buscar el registro
@@ -42,18 +42,63 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Documento no encontrado' }, { status: 404 });
     }
 
+    // Determinar la ubicación final
+    // Si se proporciona ubicacion desde el modal, usarla
+    // Si no, usar el despacho del usuario
+    const ubicacionFinal = ubicacion || usuario.despacho;
+
     // Agregar nueva ubicación al historial
-    registro.historialUbicaciones.push({
-      lugar: usuario.despacho,
+    const historialEntry = {
+      lugar: ubicacionFinal,
       usuario: usuario.nombre,
       fecha: new Date(),
-    });
-    registro.ubicacionActual = usuario.despacho;
+    };
+
+    registro.historialUbicaciones.push(historialEntry);
+    registro.ubicacionActual = ubicacionFinal;
 
     await registro.save();
 
+    // Crear mensaje descriptivo según la ubicación
+    let mensajeDescriptivo = '';
+    switch (ubicacionFinal) {
+      case 'MATRIZ':
+        mensajeDescriptivo = 'en Matriz';
+        break;
+      case 'DILIGENCIA':
+        mensajeDescriptivo = 'en Diligencia';
+        break;
+      case '1_PRESENTACION':
+        mensajeDescriptivo = 'en 1ª Presentación';
+        break;
+      case 'COPIA':
+        mensajeDescriptivo = 'en Copia';
+        break;
+      case 'CATASTRO':
+        mensajeDescriptivo = 'en Catastro';
+        break;
+      case '2_PRESENTACION':
+        mensajeDescriptivo = 'en 2ª Presentación';
+        break;
+      case 'ARCHIVO':
+        mensajeDescriptivo = 'en Archivo';
+        break;
+      case 'FACTURA':
+        mensajeDescriptivo = 'en Factura';
+        break;
+      case 'MOSTRADOR':
+        mensajeDescriptivo = 'en Mostrador';
+        break;
+      case 'DESPACHO_MAPE':
+      case 'DESPACHO_MCVF':
+        mensajeDescriptivo = `para firma en ${ubicacionFinal.replace('DESPACHO_', '')}`;
+        break;
+      default:
+        mensajeDescriptivo = `en ${ubicacionFinal}`;
+    }
+
     return NextResponse.json({
-      message: `Documento ${registro.numero} ahora está en ${usuario.despacho}`,
+      message: `📍 Documento ${registro.numero} ahora está ${mensajeDescriptivo}`,
       registro: {
         numero: registro.numero,
         ubicacionActual: registro.ubicacionActual,

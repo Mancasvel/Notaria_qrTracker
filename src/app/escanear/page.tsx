@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Header } from '@/components/Header';
 import { Html5Qrcode, Html5QrcodeScannerState } from 'html5-qrcode';
+import { UbicacionModal } from '@/components/UbicacionModal';
 
 export default function EscanearPage() {
   const { data: session, status } = useSession();
@@ -19,6 +20,10 @@ export default function EscanearPage() {
   const [cameras, setCameras] = useState<Array<{ id: string; label: string }>>([]);
   const [selectedCamera, setSelectedCamera] = useState<string>('');
   const [diagnosticInfo, setDiagnosticInfo] = useState<string>('');
+  const [showModal, setShowModal] = useState(false);
+  const [pendingDocumentId, setPendingDocumentId] = useState<string>('');
+  const [pendingDocumentNumero, setPendingDocumentNumero] = useState<string>('');
+  const [pendingDocumentNotario, setPendingDocumentNotario] = useState<'MAPE' | 'MCVF' | undefined>(undefined);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const qrReaderRef = useRef<HTMLDivElement>(null);
 
@@ -242,13 +247,47 @@ export default function EscanearPage() {
       // Guardar el ID para la función de archivar
       setLastDocumentId(documentId);
 
-      // Enviar a la API para actualizar ubicación
+      // Obtener información del documento
+      const docResponse = await fetch(`/api/registros/${documentId}`);
+      if (!docResponse.ok) {
+        setMessage('⚠️ Documento no encontrado');
+        return;
+      }
+      const docData = await docResponse.json();
+
+      // Determinar si necesitamos mostrar el modal según el rol
+      const rolesConModal = ['oficial', 'copista', 'contabilidad'];
+      
+      if (rolesConModal.includes(session.user.role)) {
+        // Mostrar modal para seleccionar trámite
+        setPendingDocumentId(documentId);
+        setPendingDocumentNumero(docData.numero);
+        setPendingDocumentNotario(docData.notario);
+        setShowModal(true);
+      } else if (session.user.role === 'notario') {
+        // Para notario, actualizar a su despacho
+        await updateDocumentLocation(documentId, session.user.despacho);
+      } else if (session.user.role === 'mostrador') {
+        // Para mostrador, actualizar a MOSTRADOR
+        await updateDocumentLocation(documentId, 'MOSTRADOR');
+      } else {
+        // Para otros roles, usar su despacho
+        await updateDocumentLocation(documentId, session.user.despacho);
+      }
+    } catch (error) {
+      console.error('Error processing QR:', error);
+      setMessage('⚠️ Error al procesar el QR');
+    }
+  };
+
+  const updateDocumentLocation = async (documentId: string, ubicacion?: string) => {
+    try {
       const response = await fetch('/api/escanear', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ documentId }),
+        body: JSON.stringify({ documentId, ubicacion }),
       });
 
       const data = await response.json();
@@ -259,9 +298,25 @@ export default function EscanearPage() {
         setMessage(`⚠️ ${data.error}`);
       }
     } catch (error) {
-      console.error('Error processing QR:', error);
-      setMessage('⚠️ Error al procesar el QR');
+      console.error('Error updating location:', error);
+      setMessage('⚠️ Error al actualizar la ubicación');
     }
+  };
+
+  const handleModalSelect = async (ubicacion: string) => {
+    setShowModal(false);
+    await updateDocumentLocation(pendingDocumentId, ubicacion);
+    setPendingDocumentId('');
+    setPendingDocumentNumero('');
+    setPendingDocumentNotario(undefined);
+  };
+
+  const handleModalClose = () => {
+    setShowModal(false);
+    setPendingDocumentId('');
+    setPendingDocumentNumero('');
+    setPendingDocumentNotario(undefined);
+    setMessage('⚠️ Escaneo cancelado');
   };
 
   const runDiagnostics = async () => {
@@ -459,8 +514,8 @@ export default function EscanearPage() {
                   )}
                 </div>
 
-                {/* Botón de archivar (solo para copias) */}
-                {session.user.role === 'copias' && (
+                {/* Botón de archivar (solo para copistas) */}
+                {session.user.role === 'copista' && (
                   <Button
                     onClick={handleArchivar}
                     disabled={!lastDocumentId || isArchiving}
@@ -478,8 +533,11 @@ export default function EscanearPage() {
                 <h3 className="font-medium mb-2">💡 Instrucciones:</h3>
                 <ul className="text-sm text-muted-foreground space-y-1">
                   <li>• Permite el acceso a la cámara cuando el navegador lo solicite</li>
-                  <li>• Escanea el QR para registrar el documento en tu despacho</li>
-                  {session.user.role === 'copias' && (
+                  <li>• Escanea el QR para registrar el documento</li>
+                  {['oficial', 'copista', 'contabilidad'].includes(session.user.role) && (
+                    <li>• Selecciona el trámite correspondiente en el modal</li>
+                  )}
+                  {session.user.role === 'copista' && (
                     <li>• Usa &quot;Archivar&quot; para marcar un documento como archivado</li>
                   )}
                   <li>• Mantén el QR dentro del marco de enfoque</li>
@@ -547,16 +605,25 @@ export default function EscanearPage() {
               {/* Tu despacho actual */}
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">
-                  {session.user.role === 'copias' ? 'Tu ubicación' : 'Tu despacho'}:
+                  Tu despacho:
                 </p>
                 <p className="text-lg font-semibold text-primary">
-                  {session.user.role === 'copias' ? 'ARCHIVO / ' : ''}{session.user.despacho || 'No asignado'}
+                  {session.user.despacho || 'No asignado'}
                 </p>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Modal de selección de ubicación/trámite */}
+      <UbicacionModal
+        isOpen={showModal}
+        onClose={handleModalClose}
+        onSelect={handleModalSelect}
+        role={session.user.role}
+        documentNotario={pendingDocumentNotario}
+      />
     </div>
   );
 }
