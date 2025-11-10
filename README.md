@@ -1,6 +1,4 @@
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com//Mancasvel/Notaria_qrTracker)
-![License](https://img.shields.io/github/license/Mancasvel/Notaria_qrTracker)  
-![Version](https://img.shields.io/github/v/tag/Mancasvel/Notaria_qrTracker)  
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com//Mancasvel/Notaria_qrTracker)   
 ![Last Commit](https://img.shields.io/github/last-commit/Mancasvel/Notaria_qrTracker)  
 ![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)   
 ![Built with Next.js](https://img.shields.io/badge/Built%20with-Next.js-black?logo=next.js)  
