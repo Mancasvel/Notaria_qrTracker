@@ -427,3 +427,6 @@ El uso no autorizado de este software constituye una **violación de los derecho
 ---
 
 **Desarrollado con ❤️ por Manuel Castillejo para modernizar la gestión documental notarial**
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com//Mancasvel/Notaria_qrTracker)
+
