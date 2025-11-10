@@ -15,8 +15,6 @@ export default function EscanearPage() {
   const [isScanning, setIsScanning] = useState(false);
   const [message, setMessage] = useState('');
   const [lastScanned, setLastScanned] = useState<string>('');
-  const [lastDocumentId, setLastDocumentId] = useState<string>('');
-  const [isArchiving, setIsArchiving] = useState(false);
   const [cameras, setCameras] = useState<Array<{ id: string; label: string }>>([]);
   const [selectedCamera, setSelectedCamera] = useState<string>('');
   const [diagnosticInfo, setDiagnosticInfo] = useState<string>('');
@@ -244,9 +242,6 @@ export default function EscanearPage() {
         return;
       }
 
-      // Guardar el ID para la función de archivar
-      setLastDocumentId(documentId);
-
       // Obtener información del documento
       const docResponse = await fetch(`/api/registros/${documentId}`);
       if (!docResponse.ok) {
@@ -378,40 +373,6 @@ export default function EscanearPage() {
     }
   };
 
-  const handleArchivar = async () => {
-    if (!lastDocumentId) {
-      setMessage('⚠️ Primero debes escanear un documento');
-      return;
-    }
-
-    setIsArchiving(true);
-    setMessage('');
-
-    try {
-      const response = await fetch('/api/archivar', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ documentId: lastDocumentId }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage(`✅ ${data.message}`);
-        setLastDocumentId('');
-      } else {
-        setMessage(`⚠️ ${data.error}`);
-      }
-    } catch (error) {
-      console.error('Error archiving document:', error);
-      setMessage('⚠️ Error al archivar el documento');
-    } finally {
-      setIsArchiving(false);
-    }
-  };
-
   const onScanError = (error: string) => {
     // Ignorar errores de escaneo normales (no hay QR en vista)
     console.debug('QR scan error:', error);
@@ -514,18 +475,6 @@ export default function EscanearPage() {
                   )}
                 </div>
 
-                {/* Botón de archivar (solo para copistas) */}
-                {session.user.role === 'copista' && (
-                  <Button
-                    onClick={handleArchivar}
-                    disabled={!lastDocumentId || isArchiving}
-                    variant="secondary"
-                    className="w-full text-base sm:text-lg py-5 sm:py-6"
-                    size="lg"
-                  >
-                    {isArchiving ? '⏳ Archivando...' : '📁 Archivar Documento'}
-                  </Button>
-                )}
               </div>
 
               {/* Información adicional */}
@@ -533,12 +482,9 @@ export default function EscanearPage() {
                 <h3 className="font-medium mb-2">💡 Instrucciones:</h3>
                 <ul className="text-sm text-muted-foreground space-y-1">
                   <li>• Permite el acceso a la cámara cuando el navegador lo solicite</li>
-                  <li>• Escanea el QR para registrar el documento</li>
+                  <li>• Escanea el QR del documento</li>
                   {['oficial', 'copista', 'contabilidad'].includes(session.user.role) && (
-                    <li>• Selecciona el trámite correspondiente en el modal</li>
-                  )}
-                  {session.user.role === 'copista' && (
-                    <li>• Usa &quot;Archivar&quot; para marcar un documento como archivado</li>
+                    <li>• Selecciona la ubicación/trámite correspondiente en el modal</li>
                   )}
                   <li>• Mantén el QR dentro del marco de enfoque</li>
                   <li>• La ubicación se actualizará automáticamente</li>
