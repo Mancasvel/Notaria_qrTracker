@@ -1,3 +1,5 @@
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com//Mancasvel/Notaria_qrTracker)
+
 # Gestión Documental - Notaría
 
 Sistema web avanzado para registrar y gestionar documentos en una notaría con trazabilidad completa mediante códigos QR, historial de ubicaciones y gestión por despacho. Construido con Next.js 15, TailwindCSS, MongoDB Atlas y NextAuth.
@@ -428,5 +430,5 @@ El uso no autorizado de este software constituye una **violación de los derecho
 
 **Desarrollado con ❤️ por Manuel Castillejo para modernizar la gestión documental notarial**
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com//Mancasvel/Notaria_qrTracker)
+
 
