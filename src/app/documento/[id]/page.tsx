@@ -268,7 +268,7 @@ export default function DocumentoDetailPage({ params }: PageProps) {
                     <p className="text-lg">{registro.notario}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Copista</label>
+                    <label className="text-sm font-medium text-muted-foreground">Oficial</label>
                     <p className="text-lg">{registro.usuario}</p>
                   </div>
                   <div>
@@ -280,7 +280,7 @@ export default function DocumentoDetailPage({ params }: PageProps) {
                 </div>
 
                 <div className="pt-4 border-t">
-                  <label className="text-sm font-medium text-muted-foreground">Ubicación actual</label>
+                  <label className="text-sm font-medium text-muted-foreground">Proceso actual</label>
                   <p className="text-xl font-semibold text-primary">{registro.ubicacionActual || 'Sin asignar'}</p>
                 </div>
               </CardContent>
@@ -297,27 +297,32 @@ export default function DocumentoDetailPage({ params }: PageProps) {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {registro.historialUbicaciones.map((ubicacion, index) => (
-                      <div key={index} className="flex items-start gap-3 pb-3 border-b last:border-0">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
-                          {registro.historialUbicaciones.length - index}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <p className="font-semibold">{ubicacion.lugar}</p>
-                            {index === 0 && (
-                              <span className="px-2 py-1 rounded text-xs font-medium bg-primary/10 text-primary">
-                                Actual
-                              </span>
-                            )}
+                    {[...registro.historialUbicaciones].reverse().map((ubicacion, index) => {
+                      const numeroOrden = registro.historialUbicaciones.length - index;
+                      const isActual = index === 0; // El primero después del reverse es el más reciente
+                      
+                      return (
+                        <div key={index} className="flex items-start gap-3 pb-3 border-b last:border-0">
+                          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
+                            {numeroOrden}
                           </div>
-                          <p className="text-sm text-muted-foreground">Por: {ubicacion.usuario}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {format(new Date(ubicacion.fecha), "dd/MM/yyyy 'a las' HH:mm", { locale: es })}
-                          </p>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <p className="font-semibold">{ubicacion.lugar}</p>
+                              {isActual && (
+                                <span className="px-2 py-1 rounded text-xs font-medium bg-primary/10 text-primary">
+                                  Actual
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">Por: {ubicacion.usuario}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {format(new Date(ubicacion.fecha), "dd/MM/yyyy 'a las' HH:mm", { locale: es })}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    )).reverse()}
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>

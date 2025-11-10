@@ -173,9 +173,9 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Ubicación</label>
+                    <label className="text-sm font-medium">Proceso</label>
                     <Input
-                      placeholder="Buscar por ubicación..."
+                      placeholder="Buscar por proceso..."
                       value={filtros.ubicacion || ''}
                       onChange={(e) => setFiltros(prev => ({ ...prev, ubicacion: e.target.value || undefined }))}
                     />
@@ -201,7 +201,7 @@ export default function DashboardPage() {
                       <th className="text-left p-3 font-medium">Tipo</th>
                       <th className="text-left p-3 font-medium">Estado</th>
                       <th className="text-left p-3 font-medium">Notario</th>
-                      <th className="text-left p-3 font-medium">Ubicación</th>
+                      <th className="text-left p-3 font-medium">Proceso</th>
                       <th className="text-left p-3 font-medium">Fecha</th>
                     </tr>
                   </thead>
