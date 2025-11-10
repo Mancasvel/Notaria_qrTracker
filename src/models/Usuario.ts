@@ -42,6 +42,13 @@ const UsuarioSchema = new mongoose.Schema<IUsuario>({
   timestamps: true,
 });
 
+// Índices para optimización de consultas
+// Índice único en email (ya está definido en el schema como unique: true)
+// Índice compuesto para búsquedas por rol y nombre
+UsuarioSchema.index({ rol: 1, nombre: 1 });
+// Índice para búsquedas por despacho
+UsuarioSchema.index({ despacho: 1 });
+
 // Check if the model already exists to prevent re-compilation errors
 const Usuario = mongoose.models.Usuario || mongoose.model<IUsuario>('Usuario', UsuarioSchema);
 

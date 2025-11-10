@@ -9,7 +9,8 @@
     "lint": "eslint",
     "seed": "tsx src/scripts/seed.ts",
     "add-oficiales": "tsx src/scripts/add-oficiales.ts",
-    "cleanup-users": "tsx src/scripts/cleanup-users.ts"
+    "cleanup-users": "tsx src/scripts/cleanup-users.ts",
+    "create-indexes": "tsx src/scripts/create-indexes.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

@@ -50,7 +50,12 @@ export async function GET(request: NextRequest) {
       filtros.ubicacionActual = { $regex: ubicacion, $options: 'i' };
     }
 
-    const registros = await Registro.find(filtros).sort({ fecha: -1 });
+    // Optimización: Solo seleccionar campos necesarios para el dashboard
+    // Excluir qrCodeUrl que puede ser grande y no se usa en la lista
+    const registros = await Registro.find(filtros)
+      .select('-qrCodeUrl -historialUbicaciones') // Excluir campos grandes
+      .sort({ fecha: -1 })
+      .lean(); // Convierte a objetos planos JS (más rápido)
 
     return NextResponse.json(registros);
   } catch (error) {
