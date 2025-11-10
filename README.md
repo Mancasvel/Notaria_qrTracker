@@ -1,5 +1,10 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com//Mancasvel/Notaria_qrTracker)
-
+![License](https://img.shields.io/github/license/Mancasvel/Notaria_qrTracker)  
+![Version](https://img.shields.io/github/v/tag/Mancasvel/Notaria_qrTracker)  
+![Last Commit](https://img.shields.io/github/last-commit/Mancasvel/Notaria_qrTracker)  
+![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)   
+![Built with Next.js](https://img.shields.io/badge/Built%20with-Next.js-black?logo=next.js)  
+![MongoDB](https://img.shields.io/badge/Database-MongoDB-green?logo=mongodb)
 # Gestión Documental - Notaría
 
 Sistema web avanzado para registrar y gestionar documentos en una notaría con trazabilidad completa mediante códigos QR, historial de ubicaciones y gestión por despacho. Construido con Next.js 15, TailwindCSS, MongoDB Atlas y NextAuth.
