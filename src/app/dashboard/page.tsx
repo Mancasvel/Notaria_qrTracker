@@ -100,6 +100,14 @@ export default function DashboardPage() {
     setFiltros({});
   };
 
+  // Función helper para obtener la fecha del último proceso
+  const getFechaUltimoProceso = (registro: Registro): Date => {
+    const ultimoProceso = registro.historialUbicaciones && registro.historialUbicaciones.length > 0
+      ? registro.historialUbicaciones[registro.historialUbicaciones.length - 1]
+      : null;
+    return ultimoProceso?.fecha ? new Date(ultimoProceso.fecha) : new Date(registro.fecha);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -261,7 +269,7 @@ export default function DashboardPage() {
                             </div>
                           </td>
                           <td className="p-3 text-sm text-muted-foreground">
-                            {format(new Date(registro.fecha), 'dd/MM/yyyy HH:mm', { locale: es })}
+                            {format(getFechaUltimoProceso(registro), 'dd/MM/yyyy HH:mm', { locale: es })}
                           </td>
                         </tr>
                       ))
@@ -328,7 +336,7 @@ export default function DashboardPage() {
                         </div>
                         
                         <div className="text-xs text-muted-foreground pt-2 border-t">
-                          {format(new Date(registro.fecha), 'dd/MM/yyyy HH:mm', { locale: es })}
+                          {format(getFechaUltimoProceso(registro), 'dd/MM/yyyy HH:mm', { locale: es })}
                         </div>
                       </div>
                     </Card>
