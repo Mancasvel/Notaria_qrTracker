@@ -39,7 +39,7 @@ const getOpcionesPorRol = (role: string, documentNotario?: 'MAPE' | 'MCVF'): Ubi
     case 'contabilidad':
       return [
         { label: '🧾 Factura', value: 'FACTURA' },
-        { label: '📁 Archivo', value: 'ARCHIVO' },
+        { label: '📁 Pendiente en copia', value: 'ARCHIVO' },
         { label: '✍️ Firma', value: documentNotario ? `DESPACHO_${documentNotario}` : 'FIRMA' },
       ];
     
