@@ -254,7 +254,7 @@ export default function DocumentoDetailPage({ params }: PageProps) {
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Tipo</label>
                     <p className="text-lg">
-                      {registro.tipo === 'copia_simple' ? 'Copia simple' : 'Presentación telemática'}
+                      {registro.tipo}
                     </p>
                   </div>
                   <div>

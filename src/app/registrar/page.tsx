@@ -15,7 +15,7 @@ export default function RegistrarPage() {
   const router = useRouter();
   const currentYear = new Date().getFullYear();
   const [numero, setNumero] = useState(`${currentYear}-`);
-  const [tipo, setTipo] = useState<'copia_simple' | 'presentacion_telematica'>('copia_simple');
+  const [tipo, setTipo] = useState<'Inmuebles' | 'Sucesiones y Familia' | 'Mercantil/Empresas' | 'Poderes y Actas'>('Inmuebles');
   const [notario, setNotario] = useState<'MAPE' | 'MCVF'>('MAPE');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -74,7 +74,7 @@ export default function RegistrarPage() {
         setRegisteredNumero(data.registro.numero);
         // Limpiar formulario
         setNumero(`${currentYear}-`);
-        setTipo('copia_simple');
+        setTipo('Inmuebles');
         setNotario('MAPE');
       } else {
         alert(data.error || 'Error al registrar');
@@ -217,11 +217,13 @@ export default function RegistrarPage() {
                   <Select
                     id="tipo"
                     value={tipo}
-                    onChange={(e) => setTipo(e.target.value as 'copia_simple' | 'presentacion_telematica')}
+                    onChange={(e) => setTipo(e.target.value as 'Inmuebles' | 'Sucesiones y Familia' | 'Mercantil/Empresas' | 'Poderes y Actas')}
                     disabled={isLoading}
                   >
-                    <option value="copia_simple">Copia simple</option>
-                    <option value="presentacion_telematica">Presentación telemática</option>
+                    <option value="Inmuebles">Inmuebles</option>
+                    <option value="Sucesiones y Familia">Sucesiones y Familia</option>
+                    <option value="Mercantil/Empresas">Mercantil/Empresas</option>
+                    <option value="Poderes y Actas">Poderes y Actas</option>
                   </Select>
                 </div>
 

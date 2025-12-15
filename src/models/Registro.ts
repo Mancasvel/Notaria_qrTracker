@@ -9,7 +9,7 @@ export interface IUbicacion {
 export interface IRegistro {
   _id?: mongoose.Types.ObjectId;
   numero: string;
-  tipo: 'copia_simple' | 'presentacion_telematica';
+  tipo: 'Inmuebles' | 'Sucesiones y Familia' | 'Mercantil/Empresas' | 'Poderes y Actas';
   hecha: boolean;
   notario: 'MAPE' | 'MCVF';
   usuario: string; // nombre del oficial que creó el registro
@@ -31,7 +31,7 @@ const RegistroSchema = new mongoose.Schema<IRegistro>({
   tipo: {
     type: String,
     required: true,
-    enum: ['copia_simple', 'presentacion_telematica'],
+    enum: ['Inmuebles', 'Sucesiones y Familia', 'Mercantil/Empresas', 'Poderes y Actas'],
   },
   hecha: {
     type: Boolean,

@@ -153,12 +153,14 @@ export default function DashboardPage() {
                       value={filtros.tipo || ''}
                       onChange={(e) => setFiltros(prev => ({
                         ...prev,
-                        tipo: e.target.value as 'copia_simple' | 'presentacion_telematica' || undefined
+                        tipo: e.target.value as 'Inmuebles' | 'Sucesiones y Familia' | 'Mercantil/Empresas' | 'Poderes y Actas' || undefined
                       }))}
                     >
                       <option value="">Todos</option>
-                      <option value="copia_simple">Copia simple</option>
-                      <option value="presentacion_telematica">Presentación telemática</option>
+                      <option value="Inmuebles">Inmuebles</option>
+                      <option value="Sucesiones y Familia">Sucesiones y Familia</option>
+                      <option value="Mercantil/Empresas">Mercantil/Empresas</option>
+                      <option value="Poderes y Actas">Poderes y Actas</option>
                     </Select>
                   </div>
 
@@ -239,7 +241,7 @@ export default function DashboardPage() {
                           </td>
                           <td className="p-3">{registro.usuario}</td>
                           <td className="p-3">
-                            {registro.tipo === 'copia_simple' ? 'Copia simple' : 'Presentación telemática'}
+                            {registro.tipo}
                           </td>
                           <td className="p-3">
                             {session.user.role === 'admin' ? (

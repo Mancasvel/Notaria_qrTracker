@@ -31,7 +31,7 @@ export interface Registro {
   updatedAt: Date;
 }
 
-export type TipoRegistro = 'copia_simple' | 'presentacion_telematica';
+export type TipoRegistro = 'Inmuebles' | 'Sucesiones y Familia' | 'Mercantil/Empresas' | 'Poderes y Actas';
 
 export interface FiltrosDashboard {
   numero?: string;

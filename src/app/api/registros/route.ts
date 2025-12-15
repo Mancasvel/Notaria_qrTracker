@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const numero = searchParams.get('numero');
     const notario = searchParams.get('notario') as 'MAPE' | 'MCVF' | null;
-    const tipo = searchParams.get('tipo') as 'copia_simple' | 'presentacion_telematica' | null;
+    const tipo = searchParams.get('tipo') as 'Inmuebles' | 'Sucesiones y Familia' | 'Mercantil/Empresas' | 'Poderes y Actas' | null;
     const estado = searchParams.get('estado');
     const ubicacion = searchParams.get('ubicacion');
 
@@ -35,11 +35,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (tipo) {
-      if (tipo === 'copia_simple') {
-        filtros.necesita_presentacion = false;
-      } else if (tipo === 'presentacion_telematica') {
-        filtros.necesita_presentacion = true;
-      }
+      filtros.tipo = tipo;
     }
 
     if (estado !== null) {
@@ -90,7 +86,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validar tipo
-    if (!['copia_simple', 'presentacion_telematica'].includes(tipo)) {
+    if (!['Inmuebles', 'Sucesiones y Familia', 'Mercantil/Empresas', 'Poderes y Actas'].includes(tipo)) {
       return NextResponse.json({ error: 'Tipo inválido' }, { status: 400 });
     }
 
