@@ -10,7 +10,8 @@
     "seed": "tsx src/scripts/seed.ts",
     "add-oficiales": "tsx src/scripts/add-oficiales.ts",
     "cleanup-users": "tsx src/scripts/cleanup-users.ts",
-    "create-indexes": "tsx src/scripts/create-indexes.ts"
+    "create-indexes": "tsx src/scripts/create-indexes.ts",
+    "restore-users": "tsx restore-users.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

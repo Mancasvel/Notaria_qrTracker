@@ -52,7 +52,7 @@ export default function LoginPage() {
 
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Registro de Copias</CardTitle>
+          <CardTitle className="text-2xl">Gestión de Matrices</CardTitle>
           <CardDescription>
             Inicia sesión en el sistema de notaría
           </CardDescription>

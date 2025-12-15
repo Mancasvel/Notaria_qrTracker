@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Gestión Documental - Notaría",
-  description: "Sistema de gestión documental para notaría",
+  title: "Gestión Matrices",
+  description: "Gestión de Matrices",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "restore-users.ts", "add-eva.js", "scripts/**/*.ts", "src/scripts/**/*.ts"]
 }
