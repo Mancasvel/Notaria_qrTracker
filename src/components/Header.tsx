@@ -34,6 +34,13 @@ export function Header() {
       path: '/dashboard',
     });
 
+    // Dashboard extra con gráficos
+    items.push({
+      label: 'Dashboard Analytics',
+      icon: <ChartBarIcon className="h-4 w-4" />,
+      path: '/dashboard-extra',
+    });
+
     // Copistas y oficiales pueden registrar documentos
     if (role === 'copista' || role === 'oficial') {
       items.push({
