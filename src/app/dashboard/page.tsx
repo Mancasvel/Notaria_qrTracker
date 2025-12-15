@@ -197,7 +197,7 @@ export default function DashboardPage() {
                   <thead>
                     <tr className="border-b border-border bg-muted/50">
                       <th className="text-left p-3 font-medium">Nº Protocolo</th>
-                      <th className="text-left p-3 font-medium">Copista</th>
+                      <th className="text-left p-3 font-medium">Oficial</th>
                       <th className="text-left p-3 font-medium">Tipo</th>
                       <th className="text-left p-3 font-medium">Estado</th>
                       <th className="text-left p-3 font-medium">Notario</th>
@@ -303,7 +303,7 @@ export default function DashboardPage() {
                         
                         <div className="grid grid-cols-2 gap-2 text-sm">
                           <div>
-                            <span className="text-muted-foreground">Copista:</span>
+                            <span className="text-muted-foreground">Oficial:</span>
                             <p className="font-medium">{registro.usuario}</p>
                           </div>
                           <div>
