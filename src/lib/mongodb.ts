@@ -1,3 +1,8 @@
+// Cargar variables de entorno al inicio (fallback si Next.js no las carga)
+import './env-loader';
+
+// Next.js carga automáticamente las variables de entorno desde .env.local, .env, etc.
+// No es necesario cargarlas manualmente aquí.
 import mongoose from 'mongoose';
 
 /**
@@ -12,6 +17,7 @@ interface GlobalWithMongoose {
   };
 }
 
+// Declaración del global para TypeScript
 const globalWithMongoose = global as typeof global & GlobalWithMongoose;
 
 let cached = globalWithMongoose.mongoose;
@@ -20,29 +26,39 @@ if (!cached) {
   cached = globalWithMongoose.mongoose = { conn: null, promise: null };
 }
 
-async function dbConnect(customUri?: string) {
+// ---------------------------------------------------------
+// CORRECCIÓN: Definimos la función antes de usar await/return
+// ---------------------------------------------------------
+async function dbConnect() {
+  // Acceder a process.env (Next.js carga automáticamente desde .env.local)
+  const MONGODB_URI = process.env.MONGODB_URI;
+
+  if (!MONGODB_URI) {
+    // Solo mostrar detalles en desarrollo
+    if (process.env.NODE_ENV === 'development') {
+      console.error('❌ MONGODB_URI no está definido');
+      console.error('   Verifica que .env.local existe y contiene MONGODB_URI');
+    }
+    throw new Error(
+      'MONGODB_URI no está definido. ' +
+      'Crea un archivo .env.local en la raíz del proyecto con tu URI de MongoDB Atlas.'
+    );
+  }
+
   if (cached.conn) {
     return cached.conn;
   }
-
-  // Get URI from parameter, environment variable, or fallback
-  const MONGODB_URI = customUri || process.env.MONGODB_URI;
-  
-  if (!MONGODB_URI && process.env.NODE_ENV === 'production') {
-    throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
-  }
-
-  const uri = MONGODB_URI || 'mongodb://localhost:27017/notaria_db';
 
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
     };
 
-    cached.promise = mongoose.connect(uri, opts).then((mongoose) => {
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       return mongoose;
     });
   }
+
   try {
     cached.conn = await cached.promise;
   } catch (e) {
