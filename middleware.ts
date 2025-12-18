@@ -21,11 +21,11 @@ export default withAuth(
     // Content Security Policy
     const cspHeader = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
-      "style-src 'self' 'unsafe-inline'",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' data: https://fonts.gstatic.com",
       "img-src 'self' data: blob: https:",
-      "font-src 'self' data:",
-      "connect-src 'self'",
+      "connect-src 'self' https://vercel.live wss://*.vercel.live",
       "frame-ancestors 'none'",
     ].join('; ');
     response.headers.set('Content-Security-Policy', cspHeader);
