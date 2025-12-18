@@ -4,7 +4,7 @@ export interface IUsuario {
   _id?: mongoose.Types.ObjectId;
   email: string;
   nombre: string;
-  rol: 'admin' | 'oficial' | 'notario' | 'copista' | 'mostrador' | 'contabilidad' | 'gestion' | 'polizas';
+  rol: 'admin' | 'oficial' | 'notario' | 'copista' | 'mostrador' | 'contabilidad' | 'gestion' | 'polizas' | 'indices' | 'recepcion';
   despacho: string;
   passwordHash: string;
   createdAt?: Date;
@@ -27,7 +27,7 @@ const UsuarioSchema = new mongoose.Schema<IUsuario>({
   rol: {
     type: String,
     required: true,
-    enum: ['admin', 'oficial', 'notario', 'copista', 'mostrador', 'contabilidad', 'gestion', 'polizas'],
+    enum: ['admin', 'oficial', 'notario', 'copista', 'mostrador', 'contabilidad', 'gestion', 'polizas', 'indices', 'recepcion'],
   },
   despacho: {
     type: String,
