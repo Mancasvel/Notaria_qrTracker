@@ -1,31 +1,15 @@
-// Load environment variables FIRST, before any imports
-import fs from 'fs';
-import path from 'path';
+// Cargar variables de entorno ANTES de cualquier import
+import { loadEnv } from '../lib/loadEnv';
+loadEnv();
 
-const envPath = path.join(process.cwd(), '.env.local');
-const envContent = fs.readFileSync(envPath, 'utf-8');
-
-envContent.split('\n').forEach(line => {
-  // Skip comments and empty lines
-  if (line.trim().startsWith('#') || !line.trim()) return;
-  
-  const [key, ...valueParts] = line.split('=');
-  if (key && valueParts.length > 0) {
-    const value = valueParts.join('=').trim();
-    process.env[key.trim()] = value;
-  }
-});
-
-console.log('✅ Environment variables loaded from .env.local');
-
-// NOW import modules that depend on environment variables
+// AHORA importar módulos que dependen de variables de entorno
 import dbConnect from '../lib/mongodb';
 import Usuario from '../models/Usuario';
 import Registro from '../models/Registro';
 
 async function createIndexes() {
   try {
-    await dbConnect(process.env.MONGODB_URI);
+    await dbConnect();
     console.log('Connected to MongoDB\n');
 
     console.log('📊 Creating optimized indexes...\n');
