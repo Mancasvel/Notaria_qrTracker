@@ -35,15 +35,24 @@ export default withAuth(
       return response;
     }
 
-    // If not authenticated and not on auth page, redirect to login
+    // Evitar bucles de redirección: solo redirigir si realmente es necesario
+    // Si no está autenticado y no está en la página de login, redirigir a login
     if (!isAuth && !isAuthPage) {
-      return NextResponse.redirect(new URL('/login', req.url));
+      const loginUrl = new URL('/login', req.url);
+      // Añadir callbackUrl para redirigir después del login
+      loginUrl.searchParams.set('callbackUrl', req.nextUrl.pathname);
+      return NextResponse.redirect(loginUrl);
     }
 
-    // If authenticated and on auth page, redirect based on role
+    // Si está autenticado y está en la página de login, redirigir al dashboard
+    // Pero solo si no hay un callbackUrl (para evitar bucles)
     if (isAuth && isAuthPage) {
-      // Todos van al dashboard después de login
-      return NextResponse.redirect(new URL('/dashboard', req.url));
+      const callbackUrl = req.nextUrl.searchParams.get('callbackUrl');
+      const redirectUrl = callbackUrl || '/dashboard';
+      // Evitar redirección a la misma URL
+      if (redirectUrl !== req.nextUrl.pathname) {
+        return NextResponse.redirect(new URL(redirectUrl, req.url));
+      }
     }
 
     // If authenticated, check role-based access

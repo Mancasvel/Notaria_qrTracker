@@ -1,18 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { signIn, getSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // Verificar si ya hay una sesión activa
+  useEffect(() => {
+    getSession().then((session) => {
+      if (session) {
+        const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+        router.push(callbackUrl);
+      }
+    });
+  }, [router, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,15 +38,21 @@ export default function LoginPage() {
 
       if (result?.error) {
         alert('Credenciales inválidas');
+        setIsLoading(false);
         return;
       }
 
-      // Obtener la sesión para determinar el rol
+      // Obtener la sesión para determinar la redirección
       const session = await getSession();
-      if (session?.user.role === 'admin') {
-        router.push('/dashboard');
-      } else {
-        router.push('/registrar');
+      if (session) {
+        // Usar callbackUrl si está presente, sino redirigir según el rol
+        const callbackUrl = searchParams.get('callbackUrl');
+        if (callbackUrl) {
+          router.push(callbackUrl);
+        } else {
+          // Redirigir según el rol (todos van al dashboard por defecto)
+          router.push('/dashboard');
+        }
       }
     } catch {
       alert('Error al iniciar sesión');
@@ -101,5 +118,20 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Cargando...</p>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

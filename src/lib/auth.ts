@@ -60,7 +60,19 @@ function createAuthOptions(): NextAuthOptions {
   // Acceder a las variables directamente desde process.env
   // Next.js carga automáticamente .env.local al iniciar el servidor
   const secret = process.env.NEXTAUTH_SECRET;
-  const url = process.env.NEXTAUTH_URL;
+  
+  // En Vercel, usar VERCEL_URL si NEXTAUTH_URL no está definido
+  // Vercel proporciona automáticamente VERCEL_URL en producción
+  let url = process.env.NEXTAUTH_URL;
+  if (!url && process.env.VERCEL_URL) {
+    url = `https://${process.env.VERCEL_URL}`;
+  }
+  // Fallback para desarrollo local
+  if (!url) {
+    url = process.env.NODE_ENV === 'production' 
+      ? 'https://qrtracker-pied.vercel.app'
+      : 'http://localhost:3000';
+  }
   
   // Validar secret (sin mostrar información sensible)
   if (!secret) {
@@ -154,7 +166,9 @@ function createAuthOptions(): NextAuthOptions {
     // En producción (HTTPS) usa __Secure- prefix, en desarrollo (HTTP) no
     cookies: {
       sessionToken: {
-        name: `next-auth.session-token`,
+        name: process.env.NODE_ENV === 'production' 
+          ? `__Secure-next-auth.session-token`
+          : `next-auth.session-token`,
         options: {
           httpOnly: true,
           sameSite: 'lax',
@@ -162,6 +176,8 @@ function createAuthOptions(): NextAuthOptions {
           // CLAVE: Solo marcar como secure en producción (HTTPS)
           // En localhost (HTTP) debe ser false para que el navegador acepte la cookie
           secure: process.env.NODE_ENV === 'production',
+          // En producción, no especificar dominio para que funcione en todos los subdominios de Vercel
+          domain: process.env.NODE_ENV === 'production' ? undefined : undefined,
         },
       },
     },
