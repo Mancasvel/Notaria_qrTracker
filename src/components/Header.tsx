@@ -27,6 +27,27 @@ export function Header() {
     const role = session.user.role;
     const items = [];
 
+    // Roles con acceso limitado: solo Dashboard y Escanear QR
+    const rolesLimitados = ['polizas', 'indices', 'recepcion'];
+    
+    if (rolesLimitados.includes(role)) {
+      // Solo Dashboard y Escanear QR para estos roles
+      items.push({
+        label: 'Dashboard',
+        icon: <ChartBarIcon className="h-4 w-4" />,
+        path: '/dashboard',
+      });
+      
+      items.push({
+        label: 'Escanear QR',
+        icon: <QrCodeIcon className="h-4 w-4" />,
+        path: '/escanear',
+      });
+      
+      return items;
+    }
+
+    // Para otros roles, menú completo
     // Todos tienen acceso al dashboard
     items.push({
       label: 'Dashboard',
@@ -34,7 +55,7 @@ export function Header() {
       path: '/dashboard',
     });
 
-    // Dashboard extra con gráficos
+    // Dashboard extra con gráficos (excepto para roles limitados)
     items.push({
       label: 'Dashboard Analytics',
       icon: <ChartBarIcon className="h-4 w-4" />,
