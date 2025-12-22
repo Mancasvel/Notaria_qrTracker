@@ -86,6 +86,12 @@ export async function POST(request: NextRequest) {
       case 'FACTURA':
         mensajeDescriptivo = 'en Factura';
         break;
+      case 'PENDIENTE_COPIA':
+        mensajeDescriptivo = 'Pendiente en Copia';
+        break;
+        case 'DEVUELTO_A_NOTARIO':
+        mensajeDescriptivo = 'Devuelto a Notario';
+        break;
       case 'MOSTRADOR':
         mensajeDescriptivo = 'en Mostrador';
         break;
