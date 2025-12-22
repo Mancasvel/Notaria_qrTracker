@@ -39,8 +39,9 @@ const getOpcionesPorRol = (role: string, documentNotario?: 'MAPE' | 'MCVF'): Ubi
     case 'contabilidad':
       return [
         { label: '🧾 Factura', value: 'FACTURA' },
-        { label: '📁 Pendiente en copia', value: 'ARCHIVO' },
+        { label: '📝 Pendiente en copia', value: 'PENDIENTE_COPIA' },
         { label: '✍️ Firma', value: documentNotario ? `DESPACHO_${documentNotario}` : 'FIRMA' },
+        { label: '✍️ Devuelto a notario', value: documentNotario ? `DESPACHO_${documentNotario}` : 'DEVUELTO_A_NOTARIO' }
       ];
     
     default:
