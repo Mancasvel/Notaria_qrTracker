@@ -212,7 +212,7 @@ export default function DashboardPage() {
                       <th className="text-left p-3 font-medium">Estado</th>
                       <th className="text-left p-3 font-medium">Notario</th>
                       <th className="text-left p-3 font-medium">Proceso</th>
-                      <th className="text-left p-3 font-medium">Fecha</th>
+                      <th className="text-left p-3 font-medium">Fecha creación</th>
                     </tr>
                   </thead>
                   <tbody>
