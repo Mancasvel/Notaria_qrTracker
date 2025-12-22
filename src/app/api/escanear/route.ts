@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
       case 'PENDIENTE_COPIA':
         mensajeDescriptivo = 'Pendiente en Copia';
         break;
-        case 'DEVUELTO_A_NOTARIO':
+      case 'DEVUELTO_A_NOTARIO':
         mensajeDescriptivo = 'Devuelto a Notario';
         break;
       case 'MOSTRADOR':
