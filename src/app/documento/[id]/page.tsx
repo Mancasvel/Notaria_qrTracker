@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Modal } from '@/components/ui/Modal';
 import { Header } from '@/components/Header';
 import { Registro } from '@/lib/types';
 import { format } from 'date-fns';
@@ -24,6 +25,8 @@ export default function DocumentoDetailPage({ params }: PageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [showReprintModal, setShowReprintModal] = useState(false);
+  const [isUpdatingLocation, setIsUpdatingLocation] = useState(false);
 
   const [id, setId] = useState<string>('');
 
@@ -80,7 +83,7 @@ export default function DocumentoDetailPage({ params }: PageProps) {
     }
   };
 
-  const handlePrint = () => {
+  const handlePrintQR = () => {
     if (!registro) return;
     
     // Crear un iframe oculto para imprimir solo el QR
@@ -173,6 +176,51 @@ export default function DocumentoDetailPage({ params }: PageProps) {
           }, 100);
         }, 100);
       }
+    }
+  };
+
+  const handlePrint = () => {
+    // Mostrar modal de confirmación
+    setShowReprintModal(true);
+  };
+
+  const handleConfirmReprint = async () => {
+    if (!registro) return;
+
+    setIsUpdatingLocation(true);
+
+    try {
+      // Actualizar ubicación a RE-IMPRESO
+      const response = await fetch('/api/escanear', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          documentId: registro._id,
+          ubicacion: 'RE-IMPRESO',
+        }),
+      });
+
+      if (response.ok) {
+        // Refrescar el registro para mostrar la nueva ubicación
+        await fetchRegistro();
+        
+        // Cerrar el modal
+        setShowReprintModal(false);
+        
+        // Proceder a imprimir
+        handlePrintQR();
+        
+        setMessage('✅ Ubicación actualizada y QR impreso');
+      } else {
+        const error = await response.json();
+        setMessage(error.error || 'Error al actualizar ubicación');
+      }
+    } catch {
+      setMessage('Error de conexión');
+    } finally {
+      setIsUpdatingLocation(false);
     }
   };
 
@@ -403,6 +451,40 @@ export default function DocumentoDetailPage({ params }: PageProps) {
             </CardContent>
           </Card>
         </div>
+
+        {/* Modal de confirmación para reimprimir QR */}
+        <Modal
+          isOpen={showReprintModal}
+          onClose={() => setShowReprintModal(false)}
+          title="⚠️ Confirmar Reimpresión de QR"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              ¿Estás seguro de imprimir este QR de nuevo?
+            </p>
+            <p className="text-sm font-semibold text-foreground">
+              La ubicación del protocolo <span className="text-primary">{registro?.numero}</span> se actualizará a <span className="text-orange-600">RE-IMPRESO</span> y quedará registrado en el historial.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-2 pt-4">
+              <Button
+                onClick={handleConfirmReprint}
+                disabled={isUpdatingLocation}
+                className="flex-1"
+              >
+                {isUpdatingLocation ? 'Actualizando...' : '✓ Aceptar e imprimir'}
+              </Button>
+              <Button
+                onClick={() => setShowReprintModal(false)}
+                variant="outline"
+                disabled={isUpdatingLocation}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </Modal>
       </div>
     </div>
   );

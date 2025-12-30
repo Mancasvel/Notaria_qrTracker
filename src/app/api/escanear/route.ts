@@ -92,6 +92,9 @@ export async function POST(request: NextRequest) {
       case 'DEVUELTO_A_NOTARIO':
         mensajeDescriptivo = 'Devuelto a Notario';
         break;
+      case 'RE-IMPRESO':
+        mensajeDescriptivo = 'Re-impreso (QR duplicado)';
+        break;
       case 'MOSTRADOR':
         mensajeDescriptivo = 'en Mostrador';
         break;
