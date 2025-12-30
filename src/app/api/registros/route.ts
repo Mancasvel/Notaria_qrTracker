@@ -6,7 +6,7 @@ import Registro from '@/models/Registro';
 import Usuario from '@/models/Usuario';
 import { generateQRCode } from '@/lib/qr';
 
-// GET /api/registros - Obtener registros con filtros (todos los usuarios autenticados)
+// GET /api/registros - Obtener registros con filtros y paginación (todos los usuarios autenticados)
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -23,6 +23,11 @@ export async function GET(request: NextRequest) {
     const tipo = searchParams.get('tipo') as 'Inmuebles' | 'Sucesiones y Familia' | 'Mercantil/Empresas' | 'Poderes y Actas' | null;
     const estado = searchParams.get('estado');
     const ubicacion = searchParams.get('ubicacion');
+    
+    // Parámetros de paginación
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '50', 10);
+    const skip = (page - 1) * limit;
 
     const filtros: Record<string, unknown> = {};
 
@@ -46,14 +51,34 @@ export async function GET(request: NextRequest) {
       filtros.ubicacionActual = { $regex: ubicacion, $options: 'i' };
     }
 
+    // Contar total de documentos que coinciden con los filtros
+    const total = await Registro.countDocuments(filtros);
+
     // Optimización: Solo seleccionar campos necesarios para el dashboard
     // Excluir qrCodeUrl que puede ser grande y no se usa en la lista
     const registros = await Registro.find(filtros)
       .select('-qrCodeUrl -historialUbicaciones') // Excluir campos grandes
       .sort({ fecha: -1 })
+      .skip(skip)
+      .limit(limit)
       .lean(); // Convierte a objetos planos JS (más rápido)
 
-    return NextResponse.json(registros);
+    // Calcular información de paginación
+    const totalPages = Math.ceil(total / limit);
+    const hasNextPage = page < totalPages;
+    const hasPrevPage = page > 1;
+
+    return NextResponse.json({
+      registros,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNextPage,
+        hasPrevPage,
+      },
+    });
   } catch (error) {
     console.error('Error fetching registros:', error);
     return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });

@@ -13,14 +13,32 @@ import { Registro, FiltrosDashboard } from '@/lib/types';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
+interface PaginationInfo {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [registros, setRegistros] = useState<Registro[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filtros, setFiltros] = useState<FiltrosDashboard>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    total: 0,
+    page: 1,
+    limit: 50,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
+  });
 
-  const fetchRegistros = useCallback(async () => {
+  const fetchRegistros = useCallback(async (page = 1) => {
     setIsLoading(true);
     try {
       const params = new URLSearchParams();
@@ -28,11 +46,18 @@ export default function DashboardPage() {
       if (filtros.notario) params.append('notario', filtros.notario);
       if (filtros.tipo) params.append('tipo', filtros.tipo);
       if (filtros.estado !== undefined) params.append('estado', filtros.estado.toString());
+      if (filtros.ubicacion) params.append('ubicacion', filtros.ubicacion);
+      
+      // Parámetros de paginación
+      params.append('page', page.toString());
+      params.append('limit', '50');
 
       const response = await fetch(`/api/registros?${params}`);
       if (response.ok) {
         const data = await response.json();
-        setRegistros(data);
+        setRegistros(data.registros);
+        setPagination(data.pagination);
+        setCurrentPage(page);
       }
     } catch (error) {
       console.error('Error fetching registros:', error);
@@ -43,7 +68,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (session) {
-      fetchRegistros();
+      // Resetear a página 1 cuando cambien los filtros
+      setCurrentPage(1);
+      fetchRegistros(1);
     }
   }, [fetchRegistros, session]);
 
@@ -98,6 +125,15 @@ export default function DashboardPage() {
 
   const clearFiltros = () => {
     setFiltros({});
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      fetchRegistros(newPage);
+      // Scroll al inicio de la tabla
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   // Función helper para obtener la fecha del último proceso
@@ -193,7 +229,7 @@ export default function DashboardPage() {
                 </div>
 
               <div className="flex flex-col sm:flex-row gap-2 mb-4">
-                <Button onClick={fetchRegistros} disabled={isLoading} className="w-full sm:w-auto">
+                <Button onClick={() => fetchRegistros(currentPage)} disabled={isLoading} className="w-full sm:w-auto">
                   Actualizar
                 </Button>
                 <Button variant="outline" onClick={clearFiltros} className="w-full sm:w-auto">
@@ -346,9 +382,109 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {!isLoading && registros.length > 0 && (
-                <div className="mt-4 text-sm text-muted-foreground text-center md:text-left">
-                  {registros.length} registro{registros.length !== 1 ? 's' : ''} encontrado{registros.length !== 1 ? 's' : ''}
+              {!isLoading && pagination.total > 0 && (
+                <div className="mt-6 space-y-4">
+                  {/* Información de paginación */}
+                  <div className="text-sm text-muted-foreground text-center md:text-left">
+                    Mostrando {registros.length} de {pagination.total} registro{pagination.total !== 1 ? 's' : ''} 
+                    {pagination.totalPages > 1 && ` (Página ${pagination.page} de ${pagination.totalPages})`}
+                  </div>
+
+                  {/* Controles de paginación */}
+                  {pagination.totalPages > 1 && (
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+                      {/* Botón Primera Página */}
+                      <Button
+                        onClick={() => handlePageChange(1)}
+                        disabled={!pagination.hasPrevPage || isLoading}
+                        variant="outline"
+                        size="sm"
+                        className="w-full sm:w-auto"
+                      >
+                        ⏮️ Primera
+                      </Button>
+
+                      {/* Botón Anterior */}
+                      <Button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={!pagination.hasPrevPage || isLoading}
+                        variant="outline"
+                        size="sm"
+                        className="w-full sm:w-auto"
+                      >
+                        ◀️ Anterior
+                      </Button>
+
+                      {/* Páginas numeradas (solo en desktop) */}
+                      <div className="hidden md:flex items-center gap-1">
+                        {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                          // Mostrar páginas alrededor de la página actual
+                          let pageNum;
+                          if (pagination.totalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (currentPage >= pagination.totalPages - 2) {
+                            pageNum = pagination.totalPages - 4 + i;
+                          } else {
+                            pageNum = currentPage - 2 + i;
+                          }
+
+                          return (
+                            <Button
+                              key={pageNum}
+                              onClick={() => handlePageChange(pageNum)}
+                              disabled={isLoading}
+                              variant={currentPage === pageNum ? 'default' : 'outline'}
+                              size="sm"
+                              className="min-w-[40px]"
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Selector de página (solo en móvil) */}
+                      <div className="md:hidden flex items-center gap-2 w-full sm:w-auto">
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">Página:</span>
+                        <Select
+                          value={currentPage.toString()}
+                          onChange={(e) => handlePageChange(parseInt(e.target.value))}
+                          disabled={isLoading}
+                          className="flex-1"
+                        >
+                          {Array.from({ length: pagination.totalPages }, (_, i) => (
+                            <option key={i + 1} value={i + 1}>
+                              {i + 1}
+                            </option>
+                          ))}
+                        </Select>
+                      </div>
+
+                      {/* Botón Siguiente */}
+                      <Button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={!pagination.hasNextPage || isLoading}
+                        variant="outline"
+                        size="sm"
+                        className="w-full sm:w-auto"
+                      >
+                        Siguiente ▶️
+                      </Button>
+
+                      {/* Botón Última Página */}
+                      <Button
+                        onClick={() => handlePageChange(pagination.totalPages)}
+                        disabled={!pagination.hasNextPage || isLoading}
+                        variant="outline"
+                        size="sm"
+                        className="w-full sm:w-auto"
+                      >
+                        Última ⏭️
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
